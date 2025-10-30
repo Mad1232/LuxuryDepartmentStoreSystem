@@ -1,0 +1,21 @@
+# IntelliJ project files
+.idea/
+*.iml
+
+# Build and output folders
+out/
+build/
+target/
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+
+# Java compiled classes
+*.class
+
+# Text files data storage
+products.txt
+sales.txt
