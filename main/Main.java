@@ -1,3 +1,6 @@
+/*
+Author: Prakarsha Poudel
+*/
 package main;
 
 import model.Product;
@@ -32,9 +35,78 @@ public class Main {
                 Product product = new Product(id, name, brand, price, quantity);
                 productService.addProduct(product);
             }
-            case 2 -> {
-                System.out.println("Available Items:");
-                productService.getAllProducts().forEach(System.out::println);
+
+            switch (choice) {
+                case 1 -> {
+                    int id = productService.getNextProductId();
+
+                    // Repeated input until valid item name
+                    String name;
+                    while (true) {
+                        System.out.print("Enter item name: ");
+                        name = sc.nextLine().trim();
+                        if (!name.isEmpty()) break;
+                        System.out.println("⚠️ Item name cannot be empty.");
+                    }
+
+                    // Repeated input until valid brand name
+                    String brand;
+                    while (true) {
+                        System.out.print("Enter brand: ");
+                        brand = sc.nextLine().trim();
+                        if (!brand.isEmpty()) break;
+                        System.out.println("⚠️ Brand cannot be empty.");
+                    }
+
+                    // Repeated input until valid price
+                    double price;
+                    while (true) {
+                        System.out.print("Enter price: ");
+                        try {
+                            price = Double.parseDouble(sc.nextLine());
+                            if (price >= 0) break;
+                            System.out.println("⚠️ Price cannot be negative.");
+                        } catch (NumberFormatException e) {
+                            System.out.println("⚠️ Invalid price. Please enter a number.");
+                        }
+                    }
+
+                    // Repeated input until valid quantity
+                    int quantity;
+                    while (true) {
+                        System.out.print("Enter quantity: ");
+                        try {
+                            quantity = Integer.parseInt(sc.nextLine());
+                            if (quantity >= 0) break;
+                            System.out.println("⚠️ Quantity cannot be negative.");
+                        } catch (NumberFormatException e) {
+                            System.out.println("⚠️ Invalid quantity. Please enter a whole number.");
+                        }
+                    }
+
+                    // Add product
+                    Product product = new Product(id, name, brand, price, quantity);
+                    productService.addProduct(product);
+                    System.out.println("✅ Product added successfully!");
+                }
+
+                case 2 -> {
+                    System.out.println("\nAvailable Items:");
+                    var products = productService.getAllProducts();
+                    if (products.isEmpty()) {
+                        System.out.println("No products found.");
+                    } else {
+                        products.forEach(System.out::println);
+                    }
+                }
+
+                case 3 -> {
+                    System.out.println("👋 Exiting system. Goodbye!");
+                    sc.close();
+                    return;
+                }
+
+                default -> System.out.println("⚠️ Invalid option. Please try again.");
             }
             case 3 -> {
                 System.out.println("Enter item id:");
@@ -47,7 +119,5 @@ public class Main {
             }
             default -> System.out.println("Invalid option");
         }
-
-        sc.close();
     }
 }
