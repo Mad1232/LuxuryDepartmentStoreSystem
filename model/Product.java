@@ -24,6 +24,11 @@ public class Product {
     public double getPrice() { return price; }
     public int getQuantity() { return quantity; }
 
+    // Set product price
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     @Override
     public String toString() {
         return id + " | " + name + " | " + brand + " | $" + price + " | Qty: " + quantity;

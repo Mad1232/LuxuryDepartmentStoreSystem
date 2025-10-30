@@ -12,19 +12,28 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         ProductService productService = new ProductService();
 
-        while (true) {
-            System.out.println("\n===== Luxury Department Store Management System =====");
-            System.out.println("1. Add New Luxury Item");
-            System.out.println("2. View All Items");
-            System.out.println("3. Exit");
-            System.out.print("Select option: ");
+        System.out.println("===== Luxury Department Store Management System =====");
+        System.out.println("1. Add New Luxury Item");
+        System.out.println("2. View All Items");
+        System.out.println("3. Apply Discount");
+        System.out.print("Select option: ");
+        int choice = sc.nextInt();
+        sc.nextLine(); // clear buffer
 
-            int choice;
-            try {
-                choice = Integer.parseInt(sc.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("⚠️ Invalid input. Please enter a number.");
-                continue;
+        switch (choice) {
+            case 1 -> {
+                int id = productService.getNextProductId();
+                System.out.print("Enter item name: ");
+                String name = sc.nextLine();
+                System.out.print("Enter brand: ");
+                String brand = sc.nextLine();
+                System.out.print("Enter price: ");
+                double price = sc.nextDouble();
+                System.out.print("Enter quantity: ");
+                int quantity = sc.nextInt();
+
+                Product product = new Product(id, name, brand, price, quantity);
+                productService.addProduct(product);
             }
 
             switch (choice) {
@@ -99,6 +108,16 @@ public class Main {
 
                 default -> System.out.println("⚠️ Invalid option. Please try again.");
             }
+            case 3 -> {
+                System.out.println("Enter item id:");
+                Product item_discounting = productService.getProductById(Integer.parseInt(sc.nextLine()));
+                System.out.println("Current price: " + item_discounting.getPrice());
+                System.out.println("Enter discount percentage:");
+                Integer discount_percentage = Integer.parseInt(sc.nextLine());
+                productService.discountProduct(item_discounting, discount_percentage);
+                System.out.println("New price: " + item_discounting.getPrice());
+            }
+            default -> System.out.println("Invalid option");
         }
     }
 }
