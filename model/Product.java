@@ -1,3 +1,6 @@
+/*
+Author: Prakarsha Poudel
+ */
 package model;
 
 public class Product {
