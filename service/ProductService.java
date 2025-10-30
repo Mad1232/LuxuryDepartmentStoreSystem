@@ -45,4 +45,24 @@ public class ProductService {
         if (products.isEmpty()) return 101;
         return products.get(products.size() - 1).getId() + 1;
     }
+
+    // Get specific product by ID
+    public Product getProductById(int id) {
+        List<Product> products = getAllProducts();
+        // Check list for specific product ID
+        for (Product product : products) {
+            if (product.getId() == id) {
+                return product;
+            }
+        }
+        return null;
+    }
+
+    // Calculate and apply discount to product
+    public Product discountProduct(Product product, Integer discountPercentage) {
+        // Calculate discount from percentage
+        Double discountedPrice = product.getPrice() * (1 - discountPercentage / 100.0);
+        product.setPrice(discountedPrice);
+        return product;
+    }
 }

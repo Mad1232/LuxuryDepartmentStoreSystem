@@ -12,6 +12,7 @@ public class Main {
         System.out.println("===== Luxury Department Store Management System =====");
         System.out.println("1. Add New Luxury Item");
         System.out.println("2. View All Items");
+        System.out.println("3. Apply Discount");
         System.out.print("Select option: ");
         int choice = sc.nextInt();
         sc.nextLine(); // clear buffer
@@ -34,6 +35,15 @@ public class Main {
             case 2 -> {
                 System.out.println("Available Items:");
                 productService.getAllProducts().forEach(System.out::println);
+            }
+            case 3 -> {
+                System.out.println("Enter item id:");
+                Product item_discounting = productService.getProductById(Integer.parseInt(sc.nextLine()));
+                System.out.println("Current price: " + item_discounting.getPrice());
+                System.out.println("Enter discount percentage:");
+                Integer discount_percentage = Integer.parseInt(sc.nextLine());
+                productService.discountProduct(item_discounting, discount_percentage);
+                System.out.println("New price: " + item_discounting.getPrice());
             }
             default -> System.out.println("Invalid option");
         }
