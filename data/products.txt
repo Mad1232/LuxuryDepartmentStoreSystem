@@ -1,0 +1,10 @@
+101,Gucci Leather Handbag,Accessories,Gucci,2450.00,5
+102,Louis Vuitton Sneakers,Footwear,Louis Vuitton,1200.00,10
+103,Prada Wool Coat,Clothing,Prada,1850.00,8
+104,Burberry Silk Scarf,Accessories,Burberry,650.00,15
+105,Rolex Submariner Watch,Watches,Rolex,9800.00,3
+106,Hermes Tie,Accessories,Hermes,310.00,20
+107,Chanel No.5 Perfume,Fragrance,Chanel,250.00,25
+108,Versace Sunglasses,Accessories,Versace,490.00,12
+109,Dior Evening Gown,Clothing,Dior,2750.00,4
+110,Balenciaga Hoodie,Clothing,Balenciaga,995.00,9

@@ -15,7 +15,3 @@ target/
 
 # Java compiled classes
 *.class
-
-# Text files data storage
-products.txt
-sales.txt
