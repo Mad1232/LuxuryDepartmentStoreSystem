@@ -8,4 +8,3 @@
 108,Versace Sunglasses,Accessories,490.00,12
 109,Dior Evening Gown,Clothing,2750.00,4
 110,Balenciaga Hoodie,Clothing,995.00,9
-
