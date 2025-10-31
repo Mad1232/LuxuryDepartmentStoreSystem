@@ -1,11 +1,10 @@
-101,Gucci Leather Handbag,Accessories,2450.00,5
-102,Louis Vuitton Sneakers,Footwear,1200.00,10
-103,Prada Wool Coat,Clothing,1850.00,8
-104,Burberry Silk Scarf,Accessories,650.00,15
-105,Rolex Submariner Watch,Watches,9800.00,3
-106,Hermes Tie,Accessories,310.00,20
-107,Chanel No.5 Perfume,Fragrance,250.00,25
-108,Versace Sunglasses,Accessories,490.00,12
-109,Dior Evening Gown,Clothing,2750.00,4
-110,Balenciaga Hoodie,Clothing,995.00,9
-
+101,Gucci Leather Handbag,Accessories,2450.0,5
+102,Louis Vuitton Sneakers,Footwear,1200.0,10
+103,Prada Wool Coat,Clothing,1850.0,8
+104,Burberry Silk Scarf,Accessories,650.0,15
+105,Rolex Submariner Watch,Watches,9800.0,3
+106,Hermes Tie,Accessories,310.0,20
+107,Chanel No.5 Perfume,Fragrance,250.0,25
+108,Versace Sunglasses,Accessories,490.0,12
+109,Dior Evening Gown,Clothing,2750.0,4
+110,Balenciaga Hoodie,Clothing,995.0,9
