@@ -29,4 +29,16 @@ public class FileHandler {
         }
         return lines;
     }
+
+    public static void writeAllLines(String filename, List<String> lines) {
+        try(BufferedWriter w = new BufferedWriter(new FileWriter(filename))) {
+            for (String line : lines) {
+                w.write(line);
+                w.newLine();
+            }
+        }
+        catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
+    }
 }
