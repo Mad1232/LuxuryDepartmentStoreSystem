@@ -5,9 +5,6 @@ package service;
 
 import model.Product;
 import util.FileHandler;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +16,7 @@ public class ProductService {
                 product.getBrand() + "," + product.getPrice() + "," +
                 product.getQuantity();
         FileHandler.writeLine(FILE_PATH, line);
-        System.out.println("Product added successfully!");
+        System.out.println("✅ Product added successfully!");
     }
 
     public List<Product> getAllProducts() {
@@ -61,31 +58,11 @@ public class ProductService {
         return null;
     }
 
-    // Calculate and apply discount to products.txt file
+    // Calculate and apply discount to product
     public Product discountProduct(Product product, Integer discountPercentage) {
         // Calculate discount from percentage
         Double discountedPrice = product.getPrice() * (1 - discountPercentage / 100.0);
         product.setPrice(discountedPrice);
-
-        // Update text file
-        List<Product> products = getAllProducts();
-        List<String> updatedLines = new ArrayList<>();
-
-        for (Product p : products) {
-            // Discounted product
-            if (p.getId() == product.getId()) {
-                updatedLines.add(p.getId() + "," + p.getName() + "," +
-                        p.getBrand() + "," + product.getPrice() + "," +
-                        p.getQuantity());
-            }
-            // Not discounted product
-            else {
-                updatedLines.add(p.getId() + "," + p.getName() + "," +
-                        p.getBrand() + "," + p.getPrice() + "," +
-                        p.getQuantity());
-            }
-        }
-        FileHandler.writeAllLines(FILE_PATH, updatedLines);
         return product;
     }
 }
