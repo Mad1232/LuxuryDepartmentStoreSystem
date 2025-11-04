@@ -29,8 +29,16 @@ public class Product {
         this.price = price;
     }
 
+    // Set product quantity (used when purchasing)
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     @Override
     public String toString() {
         return id + " | " + name + " | " + brand + " | $" + price + " | Qty: " + quantity;
+    }
+    public String editString() {
+        return id + "," + name + "," + brand + "," + price + "," + quantity;
     }
 }

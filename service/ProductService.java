@@ -7,6 +7,7 @@ import model.Product;
 import util.FileHandler;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProductService {
     private static final String FILE_PATH = "data/products.txt";
@@ -16,6 +17,19 @@ public class ProductService {
                 product.getBrand() + "," + product.getPrice() + "," +
                 product.getQuantity();
         FileHandler.writeLine(FILE_PATH, line);
+    }
+
+    public void editProduct(Product product) {
+        List<Product> products = getAllProducts();
+        int replace = -1;
+        for(int i = 0; i < products.size(); i++){
+            if(products.get(i).getId() == product.getId()){
+                replace = i;
+                break;
+            }
+        }
+        products.set(replace, product);
+        FileHandler.writeAllLines(FILE_PATH, products.stream().map(Product::editString).toList());
     }
 
     public List<Product> getAllProducts() {
@@ -83,5 +97,41 @@ public class ProductService {
             }
         }
         FileHandler.writeAllLines(FILE_PATH, updatedLines);
+    }
+
+    // Purchase product: decrement stock and return true if successful
+    public boolean purchaseProduct(int productId, int purchaseQuantity) {
+        if (purchaseQuantity <= 0) return false;
+        List<Product> products = getAllProducts();
+        List<String> updatedLines = new ArrayList<>();
+        Product target = null;
+        for (Product p : products) {
+            if (p.getId() == productId) {
+                target = p;
+                break;
+            }
+        }
+        if (target == null) return false; // product not found
+        if (target.getQuantity() < purchaseQuantity) return false; // insufficient stock
+
+        // decrement
+        target.setQuantity(target.getQuantity() - purchaseQuantity);
+
+        // rewrite product list
+        for (Product p : products) {
+            if (p.getId() == target.getId()) {
+                updatedLines.add(p.getId() + "," + p.getName() + "," + p.getBrand() + "," + p.getPrice() + "," + p.getQuantity());
+            } else {
+                updatedLines.add(p.getId() + "," + p.getName() + "," + p.getBrand() + "," + p.getPrice() + "," + p.getQuantity());
+            }
+        }
+        FileHandler.writeAllLines(FILE_PATH, updatedLines);
+
+        // Record sale
+        SalesService salesService = new SalesService();
+        int saleId = salesService.getNextSaleId();
+        model.Sale sale = new model.Sale(saleId, target.getId(), target.getName(), purchaseQuantity, target.getPrice());
+        salesService.recordSale(sale);
+        return true;
     }
 }
