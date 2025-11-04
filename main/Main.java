@@ -22,10 +22,11 @@ public class Main {
         while (running) {
             System.out.println("1. Add New Luxury Item");
             System.out.println("2. View All Items");
-            System.out.println("3. Purchase Item");
-            System.out.println("4. Apply Discount");
-            System.out.println("5. View Sales");
-            System.out.println("6. Quit");
+            System.out.println("3. Edit An Item");
+            System.out.println("4. Purchase Item");
+            System.out.println("5. Apply Discount");
+            System.out.println("6. View Sales");
+            System.out.println("7. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -93,7 +94,31 @@ public class Main {
                     }
                 }
 
-                case 3 -> {
+                case 3-> {
+                    System.out.println("\n===== Edit an Item =====");
+                    System.out.print("Enter item id to edit: ");
+                    int id;
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid item ID.");
+                        break;
+                    }
+
+                    Product item = productService.getProductById(id);
+                    System.out.println(item.editString());
+                    System.out.println("Please enter data in same format as above ^^^");
+                    System.out.println("Enter the updated information below:");
+                    Scanner editItem = new Scanner(System.in);
+                    String newText = editItem.nextLine();
+                    String[] split = newText.split(",");
+                    Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]),Integer.parseInt(split[4]));
+                    productService.editProduct(newItem);
+
+                }
+
+
+                case 4 -> {
                     // Step 1: Customer chooses product
                     System.out.println("\n===== Purchase Item =====");
                     System.out.print("Enter item id to purchase: ");
@@ -167,7 +192,7 @@ public class Main {
                     }
                 }
 
-                case 4 -> {
+                case 5 -> {
                     System.out.print("Enter item id: ");
                     int id = Integer.parseInt(sc.nextLine());
                     Product item = productService.getProductById(id);
@@ -183,7 +208,7 @@ public class Main {
                     System.out.println("New price: " + item.getPrice());
                 }
 
-                case 5 -> {
+                case 6 -> {
                     System.out.println("\n===== Sales Records =====");
                     var sales = salesService.getAllSales();
                     if (sales.isEmpty()) {
@@ -196,7 +221,7 @@ public class Main {
                     }
                 }
 
-                case 6 -> {
+                case 7 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }

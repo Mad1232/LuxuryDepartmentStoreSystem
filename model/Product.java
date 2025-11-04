@@ -38,4 +38,7 @@ public class Product {
     public String toString() {
         return id + " | " + name + " | " + brand + " | $" + price + " | Qty: " + quantity;
     }
+    public String editString() {
+        return id + "," + name + "," + brand + "," + price + "," + quantity;
+    }
 }

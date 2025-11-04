@@ -7,6 +7,7 @@ import model.Product;
 import util.FileHandler;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProductService {
     private static final String FILE_PATH = "data/products.txt";
@@ -16,6 +17,19 @@ public class ProductService {
                 product.getBrand() + "," + product.getPrice() + "," +
                 product.getQuantity();
         FileHandler.writeLine(FILE_PATH, line);
+    }
+
+    public void editProduct(Product product) {
+        List<Product> products = getAllProducts();
+        int replace = -1;
+        for(int i = 0; i < products.size(); i++){
+            if(products.get(i).getId() == product.getId()){
+                replace = i;
+                break;
+            }
+        }
+        products.set(replace, product);
+        FileHandler.writeAllLines(FILE_PATH, products.stream().map(Product::editString).toList());
     }
 
     public List<Product> getAllProducts() {

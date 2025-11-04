@@ -1,4 +1,4 @@
-101,Gucci Leather Handbag,Accessories,2450.0,3
+101,Gucci Leather Handbag,Accessories,2450.0,5
 102,Louis Vuitton Sneakers,Footwear,1200.0,10
 103,Prada Wool Coat,Clothing,1850.0,8
 104,Burberry Silk Scarf,Accessories,650.0,15
