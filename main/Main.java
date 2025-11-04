@@ -283,7 +283,14 @@ public class Main {
 
                 case 5 -> {
                     System.out.print("Enter item id: ");
-                    int id = Integer.parseInt(sc.nextLine());
+                    int id;
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        break;
+                    }
+
                     Product item = productService.getProductById(id);
                     if (item == null) {
                         System.out.println("Item not found.");
@@ -292,9 +299,26 @@ public class Main {
 
                     System.out.println("Current price: $" + item.getPrice());
                     System.out.print("Enter discount percentage: ");
-                    int discount = Integer.parseInt(sc.nextLine());
+                    int discount;
+                    try {
+                        discount = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        break;
+                    }
+
+                    if (discount < 0) {
+                        System.out.println("Discount cannot be negative.");
+                        break;
+                    }
+
+                    if (discount > 100) {
+                        System.out.println("Discount cannot be greater than 100%.");
+                        break;
+                    }
+
                     productService.discountProduct(item, discount);
-                    System.out.println("New price: " + item.getPrice());
+                    System.out.println("New price: $" + item.getPrice());
                 }
 
                 case 6 -> {
