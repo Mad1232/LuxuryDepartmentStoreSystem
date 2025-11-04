@@ -119,55 +119,108 @@ public class Main {
 
 
                 case 4 -> {
-                    // Step 1: Customer chooses product
+                    // Step 1: Display available items and allow customer to choose multiple products
                     System.out.println("\n===== Purchase Item =====");
-                    System.out.print("Enter item id to purchase: ");
-                    int id;
-                    try {
-                        id = Integer.parseInt(sc.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid item ID.");
+                    System.out.println("\nAvailable Items:");
+                    var products = productService.getAllProducts();
+                    if (products.isEmpty()) {
+                        System.out.println("No products available for purchase.");
                         break;
                     }
 
-                    Product item = productService.getProductById(id);
-                    if (item == null) {
-                        System.out.println("Item not found.");
-                        break;
+                    // Display all available items
+                    products.forEach(p ->
+                        System.out.printf("ID: %d | %s - %s | Price: $%.2f | In Stock: %d%n",
+                            p.getId(), p.getName(), p.getBrand(), p.getPrice(), p.getQuantity())
+                    );
+
+                    // Shopping cart to hold multiple items
+                    java.util.List<Product> cart = new java.util.ArrayList<>();
+                    java.util.List<Integer> quantities = new java.util.ArrayList<>();
+
+                    // Add items to cart
+                    boolean addingItems = true;
+                    while (addingItems) {
+                        System.out.print("\nEnter item ID to add to cart (or 0 to checkout): ");
+                        int id;
+                        try {
+                            id = Integer.parseInt(sc.nextLine());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid item ID.");
+                            continue;
+                        }
+
+                        if (id == 0) {
+                            if (cart.isEmpty()) {
+                                System.out.println("Cart is empty. Purchase cancelled.");
+                            }
+                            addingItems = false;
+                            continue;
+                        }
+
+                        Product item = productService.getProductById(id);
+                        if (item == null) {
+                            System.out.println("Item not found. Please try again.");
+                            continue;
+                        }
+
+                        if (item.getQuantity() == 0) {
+                            System.out.println("This item is out of stock.");
+                            continue;
+                        }
+
+                        System.out.println("Selected: " + item.getName() + " - " + item.getBrand());
+                        System.out.println("Price: $" + String.format("%.2f", item.getPrice()));
+                        System.out.println("Available quantity: " + item.getQuantity());
+
+                        System.out.print("Enter quantity to purchase: ");
+                        int qty;
+                        try {
+                            qty = Integer.parseInt(sc.nextLine());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid quantity.");
+                            continue;
+                        }
+
+                        if (qty <= 0) {
+                            System.out.println("Quantity must be positive.");
+                            continue;
+                        }
+
+                        if (qty > item.getQuantity()) {
+                            System.out.println("Insufficient stock. Only " + item.getQuantity() + " available.");
+                            continue;
+                        }
+
+                        cart.add(item);
+                        quantities.add(qty);
+                        System.out.println("✓ Added to cart: " + qty + "x " + item.getName());
                     }
 
-                    System.out.println("Selected: " + item.getName() + " - " + item.getBrand());
-                    System.out.println("Price: $" + String.format("%.2f", item.getPrice()));
-                    System.out.println("Available quantity: " + item.getQuantity());
-
-                    System.out.print("Enter quantity to purchase: ");
-                    int qty;
-                    try {
-                        qty = Integer.parseInt(sc.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid quantity.");
-                        break;
-                    }
-
-                    if (qty <= 0) {
-                        System.out.println("Quantity must be positive.");
-                        break;
-                    }
-
-                    if (qty > item.getQuantity()) {
-                        System.out.println("Insufficient stock. Only " + item.getQuantity() + " available.");
+                    if (cart.isEmpty()) {
                         break;
                     }
 
                     // Step 2: System calculates total with tax
-                    double subtotal = item.getPrice() * qty;
+                    double subtotal = 0.0;
+                    System.out.println("\n--- Cart Summary ---");
+                    for (int i = 0; i < cart.size(); i++) {
+                        Product p = cart.get(i);
+                        int q = quantities.get(i);
+                        double itemTotal = p.getPrice() * q;
+                        subtotal += itemTotal;
+                        System.out.printf("%dx %s - %s @ $%.2f = $%.2f%n",
+                                q, p.getName(), p.getBrand(), p.getPrice(), itemTotal);
+                    }
+
                     double tax = subtotal * 0.07; // 7% tax
                     double totalWithTax = subtotal + tax;
 
-                    System.out.println("\n--- Order Summary ---");
+                    System.out.println("----------------------------");
                     System.out.println("Subtotal: $" + String.format("%.2f", subtotal));
                     System.out.println("Tax (7%): $" + String.format("%.2f", tax));
-                    System.out.println("Total: $" + String.format("%.2f", totalWithTax));
+                    System.out.println("----------------------------");
+                    System.out.println("TOTAL: $" + String.format("%.2f", totalWithTax));
 
                     System.out.print("\nConfirm purchase? (y/n): ");
                     String confirm = sc.nextLine().trim().toLowerCase();
@@ -176,19 +229,55 @@ public class Main {
                         break;
                     }
 
-                    // Step 3: Payment recorded (via purchaseProduct)
-                    // Step 4: Inventory reduced (via purchaseProduct)
-                    boolean ok = productService.purchaseProduct(id, qty);
-                    if (ok) {
-                        // Step 5: Receipt generated
-                        SalesService tempSalesService = new SalesService();
-                        var allSales = tempSalesService.getAllSales();
-                        if (!allSales.isEmpty()) {
-                            model.Sale lastSale = allSales.get(allSales.size() - 1);
-                            System.out.println(lastSale.generateReceipt());
+                    // Step 3 & 4: Payment recorded and inventory reduced for each item
+                    java.util.List<Sale> completedSales = new java.util.ArrayList<>();
+                    boolean allSuccessful = true;
+
+                    for (int i = 0; i < cart.size(); i++) {
+                        Product p = cart.get(i);
+                        int q = quantities.get(i);
+                        boolean ok = productService.purchaseProduct(p.getId(), q);
+                        if (ok) {
+                            // Get the last sale that was just recorded
+                            var allSales = salesService.getAllSales();
+                            if (!allSales.isEmpty()) {
+                                completedSales.add(allSales.get(allSales.size() - 1));
+                            }
+                        } else {
+                            System.out.println("Failed to process: " + p.getName());
+                            allSuccessful = false;
                         }
-                    } else {
-                        System.out.println("Purchase failed. Please try again.");
+                    }
+
+                    // Step 5: Generate combined receipt
+                    if (!completedSales.isEmpty()) {
+                        System.out.println("\n========== RECEIPT ==========");
+                        System.out.println("Date: " + java.time.LocalDateTime.now().format(
+                                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        System.out.println("----------------------------");
+
+                        double receiptSubtotal = 0.0;
+                        for (Sale s : completedSales) {
+                            System.out.printf("%dx %s @ $%.2f = $%.2f%n",
+                                    s.getQuantity(), s.getProductName(), s.getUnitPrice(), s.getTotalPrice());
+                            receiptSubtotal += s.getTotalPrice();
+                        }
+
+                        double receiptTax = receiptSubtotal * 0.07;
+                        double receiptTotal = receiptSubtotal + receiptTax;
+
+                        System.out.println("----------------------------");
+                        System.out.println("Subtotal: $" + String.format("%.2f", receiptSubtotal));
+                        System.out.println("Tax (7%): $" + String.format("%.2f", receiptTax));
+                        System.out.println("----------------------------");
+                        System.out.println("TOTAL: $" + String.format("%.2f", receiptTotal));
+                        System.out.println("============================");
+                        System.out.println("Payment recorded. Thank you!");
+                        System.out.println("Inventory updated.");
+                    }
+
+                    if (!allSuccessful) {
+                        System.out.println("\nNote: Some items could not be processed.");
                     }
                 }
 
