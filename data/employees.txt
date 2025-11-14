@@ -1,0 +1,4 @@
+1,Alice Johnson,MANAGER,75000.0,true,1
+2,Bob Smith,CASHIER,35000.0,true,1
+3,Carol Davis,STOCKER,32000.0,true,2
+4,John Johnson,CASHIER,20000.0,true,3

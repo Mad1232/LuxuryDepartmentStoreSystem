@@ -17,13 +17,15 @@ public class Sale {
     private double taxAmount;
     private double totalWithTax;
     private String timestamp;
+    private int storeId; // store where the sale happened
 
-    public Sale(int saleId, int productId, String productName, int quantity, double unitPrice) {
+    public Sale(int saleId, int productId, String productName, int quantity, double unitPrice, int storeId) {
         this.saleId = saleId;
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.storeId = storeId;
         this.totalPrice = unitPrice * quantity;
         this.taxAmount = this.totalPrice * TAX_RATE;
         this.totalWithTax = this.totalPrice + this.taxAmount;
@@ -39,6 +41,7 @@ public class Sale {
     public double getTaxAmount() { return taxAmount; }
     public double getTotalWithTax() { return totalWithTax; }
     public String getTimestamp() { return timestamp; }
+    public int getStoreId() { return storeId; }
 
     // Generate a formatted receipt for this sale
     public String generateReceipt() {
@@ -47,6 +50,7 @@ public class Sale {
         receipt.append("Sale ID: ").append(saleId).append("\n");
         receipt.append("Date: ").append(timestamp).append("\n");
         receipt.append("----------------------------\n");
+        receipt.append("Store ID: ").append(storeId).append("\n");
         receipt.append("Product: ").append(productName).append("\n");
         receipt.append("Product ID: ").append(productId).append("\n");
         receipt.append("Unit Price: $").append(String.format("%.2f", unitPrice)).append("\n");
@@ -64,26 +68,36 @@ public class Sale {
 
     @Override
     public String toString() {
-        return saleId + "," + productId + "," + productName + "," + quantity + "," + unitPrice + "," + totalPrice + "," + taxAmount + "," + totalWithTax + "," + timestamp;
+        return saleId + "," + productId + "," + productName + "," + quantity + "," + unitPrice + "," + totalPrice + "," + taxAmount + "," + totalWithTax + "," + storeId + "," + timestamp;
     }
 
     public static Sale fromLine(String line) {
+        // Split into parts. We expect either the old format (9 parts) or new (10 parts).
         String[] parts = line.split(",");
-        if (parts.length < 9) return null;
+        if (parts.length < 9) return null; // not enough data
         try {
             int sid = Integer.parseInt(parts[0]);
             int pid = Integer.parseInt(parts[1]);
             String pname = parts[2];
             int qty = Integer.parseInt(parts[3]);
             double up = Double.parseDouble(parts[4]);
-            // parts[5] is totalPrice, parts[6] is taxAmount, parts[7] is totalWithTax
-            String ts = parts[8];
-            Sale s = new Sale(sid, pid, pname, qty, up);
-            s.timestamp = ts;
-            return s;
+
+            if (parts.length >= 10) {
+                // New format: has storeId at index 8 and timestamp at index 9
+                int storeId = Integer.parseInt(parts[8]);
+                String ts = parts[9];
+                Sale s = new Sale(sid, pid, pname, qty, up, storeId);
+                s.timestamp = ts;
+                return s;
+            } else {
+                // Legacy format: no storeId, timestamp at index 8
+                String ts = parts[8];
+                Sale s = new Sale(sid, pid, pname, qty, up, 0); // unknown store -> 0
+                s.timestamp = ts;
+                return s;
+            }
         } catch (NumberFormatException e) {
             return null;
         }
     }
 }
-
