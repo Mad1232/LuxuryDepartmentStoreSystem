@@ -39,7 +39,8 @@ public class Main {
             System.out.println("8. Manage Employees");
             System.out.println("9. Manage Inventory");
             System.out.println("10. Search Product by Name/Brand");
-            System.out.println("11. Quit");
+            System.out.println("11. Void a Transaction");
+            System.out.println("12. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -807,8 +808,40 @@ public class Main {
                         System.out.println("Search completed. Results displayed above.");
                     }
                 }
-
                 case 11 -> {
+                    System.out.println("\n===== Void a Transaction =====");
+
+                    var sales = salesService.getAllSales();
+                    if (sales.isEmpty()) {
+                        System.out.println("No sales to void.");
+                        break;
+                    }
+
+                    System.out.println("\nExisting Sales:");
+                    sales.forEach(System.out::println);
+
+                    System.out.print("\nEnter Sale ID to void: ");
+                    int saleId;
+                    try {
+                        saleId = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid Sale ID.");
+                        break;
+                    }
+
+                    Sale sale = salesService.getSaleById(saleId);
+                    if (sale == null) {
+                        System.out.println("Sale not found.");
+                        break;
+                    }
+
+                    // Remove sale
+                    salesService.removeSale(saleId);
+                    System.out.println("✓ Transaction voided successfully.");
+                }
+
+
+                case 12 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
