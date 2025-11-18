@@ -43,4 +43,28 @@ public class SalesService {
         }
         return total;
     }
+
+    public Sale getSaleById(int saleId) {
+        for (Sale s : getAllSales()) {
+            if (s.getSaleId() == saleId) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public void removeSale(int saleId) {
+        List<String> lines = FileHandler.readAllLines(FILE_PATH);
+        List<String> updatedLines = new ArrayList<>();
+
+        for (String line : lines) {
+            Sale s = Sale.fromLine(line);
+            if (s != null && s.getSaleId() != saleId) {
+                updatedLines.add(line); // keep all sales except the one to remove
+            }
+        }
+
+        FileHandler.writeAllLines(FILE_PATH, updatedLines);
+        System.out.println("Sale with ID " + saleId + " removed (if it existed).");
+    }
 }
