@@ -31,10 +31,10 @@ public class Product {
 
     @Override
     public String toString() {
-        return id + " | " + name + " | " + category + " | $" + String.format("%.2f", price);
+        return id + " | " + name + " | " + category + " | " + brand + " | $" + String.format("%.2f", price);
     }
 
     public String editString() {
-        return id + "," + name + "," + category + "," + price;
+        return id + "," + name + "," + category + "," + price + "," + brand;
     }
 }
