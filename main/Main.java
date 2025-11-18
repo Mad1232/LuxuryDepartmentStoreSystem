@@ -774,10 +774,9 @@ public class Main {
 
                     var products = productService.getAllProducts();
                     boolean found = false;
-
+                    System.out.println("The products/brand with name " +  keyword + ":");
                     for (Product p : products) {
                         if (p.getName().toLowerCase().contains(keyword) || p.getBrand().toLowerCase().contains(keyword)) {
-
                             System.out.println(p);
                             found = true;
                         }
