@@ -13,7 +13,7 @@ public class ProductService {
 
     public void addProduct(Product product) {
         String line = product.getId() + "," + product.getName() + "," +
-                product.getBrand() + "," + product.getPrice();
+                product.getCategory() + "," + product.getPrice();
         FileHandler.writeLine(FILE_PATH, line);
     }
 
@@ -43,7 +43,7 @@ public class ProductService {
                     String name = parts[1];
                     String brand = parts[2];
                     double price = Double.parseDouble(parts[3]);
-                    products.add(new Product(id, name, brand, price));
+                    products.add(new Product(id, name, brand, price, brand));
                 } catch (NumberFormatException e) {
                     System.out.println("Skipping invalid line: " + line);
                 }

@@ -37,7 +37,8 @@ public class Main {
             System.out.println("7. Manage Stores");
             System.out.println("8. Manage Employees");
             System.out.println("9. Manage Inventory");
-            System.out.println("10. Quit");
+            System.out.println("10. Search Product by Name/Brand");
+            System.out.println("11. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -77,7 +78,7 @@ public class Main {
                     }
 
                     // Add product
-                    Product product = new Product(id, name, brand, price);
+                    Product product = new Product(id, name, brand, price, brand);
                     productService.addProduct(product);
                     System.out.println("Product added successfully! Product ID: " + id);
                 }
@@ -114,7 +115,7 @@ public class Main {
                     Scanner editItem = new Scanner(System.in);
                     String newText = editItem.nextLine();
                     String[] split = newText.split(",");
-                    Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]));
+                    Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]), split[4]);
                     productService.editProduct(newItem);
 
                 }
@@ -160,7 +161,7 @@ public class Main {
                             Product p = productService.getProductById(inv.getProductId());
                             double effectivePrice = inv.getPriceOverride() != null ? inv.getPriceOverride() : p.getPrice();
                             System.out.printf("InvID:%d | %s - %s | Price: $%.2f | In Stock: %d%n",
-                                    inv.getId(), p.getName(), p.getBrand(), effectivePrice, inv.getQuantity());
+                                    inv.getId(), p.getName(), p.getCategory(), effectivePrice, inv.getQuantity());
                         }
                     }
 
@@ -201,7 +202,7 @@ public class Main {
                         Product product = productService.getProductById(invItem.getProductId());
                         double effectivePrice = invItem.getPriceOverride() != null ? invItem.getPriceOverride() : product.getPrice();
 
-                        System.out.println("Selected: " + product.getName() + " - " + product.getBrand());
+                        System.out.println("Selected: " + product.getName() + " - " + product.getCategory());
                         System.out.println("Price: $" + String.format("%.2f", effectivePrice));
                         System.out.println("Available quantity: " + invItem.getQuantity());
 
@@ -244,7 +245,7 @@ public class Main {
                         double itemTotal = effectivePrice * q;
                         subtotal += itemTotal;
                         System.out.printf("%dx %s - %s @ $%.2f = $%.2f%n",
-                                q, p.getName(), p.getBrand(), effectivePrice, itemTotal);
+                                q, p.getName(), p.getCategory(), effectivePrice, itemTotal);
                     }
 
                     double tax = subtotal * 0.07; // 7% tax
@@ -611,7 +612,7 @@ public class Main {
                                     Store s = storeService.getStoreById(inv.getStoreId());
                                     double effectivePrice = inv.getPriceOverride() != null ? inv.getPriceOverride() : p.getPrice();
                                     System.out.printf("InvID:%d | %s - %s | Store: %s | Qty: %d | Price: $%.2f%n",
-                                            inv.getId(), p.getName(), p.getBrand(), s.getName(), inv.getQuantity(), effectivePrice);
+                                            inv.getId(), p.getName(), p.getCategory(), s.getName(), inv.getQuantity(), effectivePrice);
                                 }
                             }
                         }
@@ -650,7 +651,7 @@ public class Main {
                                     Product p = productService.getProductById(inv.getProductId());
                                     double effectivePrice = inv.getPriceOverride() != null ? inv.getPriceOverride() : p.getPrice();
                                     System.out.printf("InvID:%d | %s - %s | Qty: %d | Price: $%.2f%n",
-                                            inv.getId(), p.getName(), p.getBrand(), inv.getQuantity(), effectivePrice);
+                                            inv.getId(), p.getName(), p.getCategory(), inv.getQuantity(), effectivePrice);
                                 }
                             }
                         }
@@ -767,6 +768,27 @@ public class Main {
                 }
 
                 case 10 -> {
+                    System.out.println("\n===== Search Product by Name/Brand =====");
+                    System.out.print("Enter keyword: ");
+                    String keyword = sc.nextLine().trim().toLowerCase();
+
+                    var products = productService.getAllProducts();
+                    boolean found = false;
+
+                    for (Product p : products) {
+                        if (p.getName().toLowerCase().contains(keyword) || p.getBrand().toLowerCase().contains(keyword)) {
+
+                            System.out.println(p);
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        System.out.println("No matching products found.");
+                    }
+                }
+
+                case 11 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
