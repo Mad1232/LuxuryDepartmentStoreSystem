@@ -13,7 +13,7 @@ public class ProductService {
 
     public void addProduct(Product product) {
         String line = product.getId() + "," + product.getName() + "," +
-                product.getBrand() + "," + product.getPrice();
+                product.getCategory() + "," + product.getPrice() + "," + product.getBrand();
         FileHandler.writeLine(FILE_PATH, line);
     }
 
@@ -37,13 +37,14 @@ public class ProductService {
         List<Product> products = new ArrayList<>();
         for (String line : lines) {
             String[] parts = line.split(",");
-            if (parts.length >= 4) {
+            if (parts.length >= 5) {
                 try {
                     int id = Integer.parseInt(parts[0]);
                     String name = parts[1];
-                    String brand = parts[2];
+                    String category = parts[2];
                     double price = Double.parseDouble(parts[3]);
-                    products.add(new Product(id, name, brand, price));
+                    String brand = parts[4];
+                    products.add(new Product(id, name, category, price, brand));
                 } catch (NumberFormatException e) {
                     System.out.println("Skipping invalid line: " + line);
                 }
