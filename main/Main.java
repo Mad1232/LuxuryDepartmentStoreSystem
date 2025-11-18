@@ -13,6 +13,7 @@ import service.ProductService;
 import service.SalesService;
 import service.StoreService;
 import service.InventoryService;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -769,12 +770,30 @@ public class Main {
 
                 case 10 -> {
                     System.out.println("\n===== Search Product by Name/Brand =====");
-                    System.out.print("Enter keyword: ");
-                    String keyword = sc.nextLine().trim().toLowerCase();
 
-                    var products = productService.getAllProducts();
+                    String keyword;
+                    while (true) {
+                        System.out.print("Enter keyword: ");
+                        keyword = sc.nextLine().trim().toLowerCase();
+                        if (!keyword.isEmpty()) break; // valid input
+                        System.out.println("Search term cannot be empty.");
+                    }
+
+                    List<Product> products;
+                    try {
+                        products = productService.getAllProducts();
+                    } catch (Exception e) {
+                        System.out.println("Error reading product data. Please try again.");
+                        break; // abort search and return to main menu
+                    }
+
+                    if (products.isEmpty()) {
+                        System.out.println("No matching products found.");
+                        break;
+                    }
+
                     boolean found = false;
-                    System.out.println("The products/brand with name " +  keyword + ":");
+                    System.out.println("Products matching keyword \"" + keyword + "\":");
                     for (Product p : products) {
                         if (p.getName().toLowerCase().contains(keyword) || p.getBrand().toLowerCase().contains(keyword)) {
                             System.out.println(p);
@@ -784,6 +803,8 @@ public class Main {
 
                     if (!found) {
                         System.out.println("No matching products found.");
+                    } else {
+                        System.out.println("Search completed. Results displayed above.");
                     }
                 }
 
