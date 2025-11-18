@@ -2,3 +2,6 @@
 2,Bob Smith,CASHIER,35000.0,true,1
 3,Carol Davis,STOCKER,32000.0,true,2
 4,John Johnson,CASHIER,20000.0,true,3
+5,Peter Smith,STOCKER,35000.0,true,4
+6,Pablo Jones,CASHIER,22000.0,true,0
+7,Logan Jennings,CUSTOMER_SERVICE,30000.0,true,4

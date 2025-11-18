@@ -16,7 +16,7 @@ public class EmployeeService {
     public void addEmployee(Employee employee) {
         String line = employee.getEmployeeId() + "," + employee.getName() + "," +
                 employee.getRole() + "," + employee.getSalary() + "," +
-                employee.isActive();
+                employee.isActive() + "," + employee.getStoreId();
         FileHandler.writeLine(FILE_PATH, line);
     }
 
