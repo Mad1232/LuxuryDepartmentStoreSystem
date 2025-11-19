@@ -7,6 +7,7 @@ import model.Product;
 import util.FileHandler;
 import java.util.ArrayList;
 import java.util.List;
+import util.PriceHistoryHandler;
 
 public class ProductService {
     private static final String FILE_PATH = "data/products.txt";
@@ -72,9 +73,16 @@ public class ProductService {
 
     // Calculate and apply discount to products.txt file
     public void discountProduct(Product product, Integer discountPercentage) {
+
         // Calculate discount from percentage
-        Double discountedPrice = product.getPrice() * (1 - discountPercentage / 100.0);
+        double discountedPrice = product.getPrice() * (1 - discountPercentage / 100.0);
+
+        double oldPrice = product.getPrice();
+
         product.setPrice(discountedPrice);
+
+        // Add price change to price document
+        PriceHistoryHandler.logPriceChange(product, oldPrice, discountedPrice);
 
         // Update the product in file
         editProduct(product);

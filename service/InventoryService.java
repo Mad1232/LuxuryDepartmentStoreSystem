@@ -117,4 +117,15 @@ public class InventoryService {
             FileHandler.writeAllLines(INVENTORY_FILE_PATH, lines);
         }
     }
+
+    // Create a list of items whos quantity is below a certain threshold
+    public List<StoreInventoryItem> getLowStockItems(int threshold) {
+        List<StoreInventoryItem> lowStock = new ArrayList<>();
+        for (StoreInventoryItem item : getAllInventory()) {
+            if (item.getQuantity() <= threshold) {
+                lowStock.add(item);
+            }
+        }
+        return lowStock;
+    }
 }

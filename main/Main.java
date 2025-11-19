@@ -15,6 +15,7 @@ import service.StoreService;
 import service.InventoryService;
 import java.util.List;
 import java.util.Scanner;
+import util.PriceHistoryHandler;
 
 public class Main {
     public static void main(String[] args) {
@@ -33,14 +34,16 @@ public class Main {
             System.out.println("2. View All Items");
             System.out.println("3. Edit An Item");
             System.out.println("4. Purchase Item");
-            System.out.println("5. Apply Discount");
-            System.out.println("6. View Sales");
-            System.out.println("7. Manage Stores");
-            System.out.println("8. Manage Employees");
-            System.out.println("9. Manage Inventory");
-            System.out.println("10. Search Product by Name/Brand");
-            System.out.println("11. Void a Transaction");
-            System.out.println("12. Quit");
+            System.out.println("5. View Low Stock Items");
+            System.out.println("6. Apply Discount");
+            System.out.println("7. View Sales");
+            System.out.println("8. View Product Price History");
+            System.out.println("9. Manage Stores");
+            System.out.println("10. Manage Employees");
+            System.out.println("11. Manage Inventory");
+            System.out.println("12. Search Product by Name/Brand");
+            System.out.println("13. Void a Transaction");
+            System.out.println("14. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -117,9 +120,19 @@ public class Main {
                     Scanner editItem = new Scanner(System.in);
                     String newText = editItem.nextLine();
                     String[] split = newText.split(",");
+
+                    // Get old price before change for logging
+                    double oldPrice = item.getPrice();
+
                     Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]), split[4]);
+
+                    // Get new price after change for logging
+                    double newPrice = newItem.getPrice();
+
                     productService.editProduct(newItem);
 
+                    // Log price change in price_history file
+                    PriceHistoryHandler.logPriceChange(item, oldPrice, newPrice);
                 }
 
 
@@ -315,8 +328,43 @@ public class Main {
                         System.out.println("\nNote: Some items could not be processed.");
                     }
                 }
-
                 case 5 -> {
+                    System.out.println("\n===== Low Stock Alerts =====");
+                    //System.out.println("1. All Stores");
+                    //System.out.println("2. By Specific Store");
+                    //System.out.println("Select Option: ");
+                    //int option = sc.nextInt();
+
+
+                    System.out.print("Enter quantity threshold: ");
+                    int threshold;
+                    try {
+                        threshold = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        break;
+                    }
+
+                    if (threshold < 0) {
+                        System.out.println("Threshold cannot be negative.");
+                        break;
+                    }
+
+                    // Fetch low stock items list
+                    var lowStockItems = inventoryService.getLowStockItems(threshold);
+
+                    if (lowStockItems.isEmpty()) {
+                        System.out.println("No low stock items.");
+                    }
+                    else {
+                        for (StoreInventoryItem item : lowStockItems) {
+                            Product p = productService.getProductById(item.getProductId());
+                            System.out.printf("%s - Qty: %d%n", p.getName(), item.getQuantity());
+                        }
+                    }
+                }
+
+                case 6 -> {
                     System.out.print("Enter item id: ");
                     int id;
                     try {
@@ -356,7 +404,7 @@ public class Main {
                     System.out.println("New price: $" + item.getPrice());
                 }
 
-                case 6 -> {
+                case 7 -> {
                     System.out.println("\n===== Sales Records =====");
                     var sales = salesService.getAllSales();
                     if (sales.isEmpty()) {
@@ -369,7 +417,30 @@ public class Main {
                     }
                 }
 
-                case 7 -> {
+                case 8 -> {
+                    System.out.println("\n===== Product Price History =====");
+                    System.out.print("Enter item id: ");
+                    int id;
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input. Please enter a number.");
+                        break;
+                    }
+
+                    Product item = productService.getProductById(id);
+                    if (item == null) {
+                        System.out.println("Item not found.");
+                        break;
+                    }
+
+                    // Print price history for given product id
+                    System.out.println("\n=== Price Change History for '" + item.getBrand() + " " + item.getName() + "' ===");
+                    PriceHistoryHandler.printPriceHistoryForProduct(item.getId());
+
+                }
+
+                case 9 -> {
                     // Manage Stores
                     System.out.println("\n===== Manage Stores =====");
                     System.out.println("1. View All Stores");
@@ -425,7 +496,7 @@ public class Main {
                     }
                 }
 
-                case 8 -> {
+                case 10 -> {
                     // Manage Employees
                     System.out.println("\n===== Manage Employees =====");
                     System.out.println("1. View All Employees");
@@ -590,7 +661,7 @@ public class Main {
                     }
                 }
 
-                case 9 -> {
+                case 11 -> {
                     // Manage Inventory
                     System.out.println("\n===== Manage Inventory =====");
                     System.out.println("1. View All Inventory");
@@ -769,7 +840,7 @@ public class Main {
                     }
                 }
 
-                case 10 -> {
+                case 12 -> {
                     System.out.println("\n===== Search Product by Name/Brand =====");
 
                     String keyword;
@@ -808,7 +879,8 @@ public class Main {
                         System.out.println("Search completed. Results displayed above.");
                     }
                 }
-                case 11 -> {
+                
+                case 13 -> {
                     System.out.println("\n===== Void a Transaction =====");
 
                     var sales = salesService.getAllSales();
@@ -841,7 +913,7 @@ public class Main {
                 }
 
 
-                case 12 -> {
+                case 14 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
