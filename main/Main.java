@@ -330,12 +330,19 @@ public class Main {
                 }
                 case 5 -> {
                     System.out.println("\n===== Low Stock Alerts =====");
-                    //System.out.println("1. All Stores");
-                    //System.out.println("2. By Specific Store");
-                    //System.out.println("Select Option: ");
-                    //int option = sc.nextInt();
 
+                    System.out.println("1. All Stores");
+                    System.out.println("2. By Specific Store");
+                    System.out.println("Select Option: ");
+                    int option;
+                    try {
+                        option = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid Input.");
+                        break;
+                    }
 
+                    // Get low stock threshold
                     System.out.print("Enter quantity threshold: ");
                     int threshold;
                     try {
@@ -345,22 +352,52 @@ public class Main {
                         break;
                     }
 
-                    if (threshold < 0) {
+                    if (threshold <= 0) {
                         System.out.println("Threshold cannot be negative.");
                         break;
                     }
 
-                    // Fetch low stock items list
-                    var lowStockItems = inventoryService.getLowStockItems(threshold);
-
-                    if (lowStockItems.isEmpty()) {
-                        System.out.println("No low stock items.");
+                    var allStores = storeService.getAllStores();
+                    if (allStores.isEmpty()) {
+                        System.out.println("No stores available");
+                        break;
                     }
-                    else {
-                        for (StoreInventoryItem item : lowStockItems) {
-                            Product p = productService.getProductById(item.getProductId());
-                            System.out.printf("%s - Qty: %d%n", p.getName(), item.getQuantity());
+
+                    // Fetch low stock items list
+                    List<StoreInventoryItem> lowStockItems = inventoryService.getLowStockItems(threshold);
+
+                    // Filter by all stores
+                    if (option == 1) {
+                        for (Store store : allStores) {
+                            inventoryService.printLowStockItems(store, lowStockItems, productService);
                         }
+                    }
+
+                    // Filter by specific store
+                    else if (option == 2) {
+                        System.out.println("\nAvailable Stores:");
+                        allStores.forEach(System.out::println);
+
+                        System.out.println("Enter store ID: ");
+                        int storeId;
+                        try {
+                            storeId = Integer.parseInt(sc.nextLine());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid store ID.");
+                            break;
+                        }
+
+                        Store store = storeService.getStoreById(storeId);
+                        if (store == null) {
+                            System.out.println("Store not found.");
+                            break;
+                        }
+
+                        inventoryService.printLowStockItems(store, lowStockItems, productService);
+                    }
+                    // Invalid option selected
+                    else {
+                        System.out.println("Invalid option.");
                     }
                 }
 
