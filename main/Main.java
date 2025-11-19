@@ -13,6 +13,7 @@ import service.ProductService;
 import service.SalesService;
 import service.StoreService;
 import service.InventoryService;
+import java.util.List;
 import java.util.Scanner;
 import util.PriceHistoryHandler;
 
@@ -41,7 +42,8 @@ public class Main {
             System.out.println("10. Manage Employees");
             System.out.println("11. Manage Inventory");
             System.out.println("12. Search Product by Name/Brand");
-            System.out.println("13. Quit");
+            System.out.println("13. Void a Transaction");
+            System.out.println("14. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -840,12 +842,30 @@ public class Main {
 
                 case 12 -> {
                     System.out.println("\n===== Search Product by Name/Brand =====");
-                    System.out.print("Enter keyword: ");
-                    String keyword = sc.nextLine().trim().toLowerCase();
 
-                    var products = productService.getAllProducts();
+                    String keyword;
+                    while (true) {
+                        System.out.print("Enter keyword: ");
+                        keyword = sc.nextLine().trim().toLowerCase();
+                        if (!keyword.isEmpty()) break; // valid input
+                        System.out.println("Search term cannot be empty.");
+                    }
+
+                    List<Product> products;
+                    try {
+                        products = productService.getAllProducts();
+                    } catch (Exception e) {
+                        System.out.println("Error reading product data. Please try again.");
+                        break; // abort search and return to main menu
+                    }
+
+                    if (products.isEmpty()) {
+                        System.out.println("No matching products found.");
+                        break;
+                    }
+
                     boolean found = false;
-                    System.out.println("The products/brand with name " +  keyword + ":");
+                    System.out.println("Products matching keyword \"" + keyword + "\":");
                     for (Product p : products) {
                         if (p.getName().toLowerCase().contains(keyword) || p.getBrand().toLowerCase().contains(keyword)) {
                             System.out.println(p);
@@ -855,10 +875,45 @@ public class Main {
 
                     if (!found) {
                         System.out.println("No matching products found.");
+                    } else {
+                        System.out.println("Search completed. Results displayed above.");
                     }
                 }
-
+                
                 case 13 -> {
+                    System.out.println("\n===== Void a Transaction =====");
+
+                    var sales = salesService.getAllSales();
+                    if (sales.isEmpty()) {
+                        System.out.println("No sales to void.");
+                        break;
+                    }
+
+                    System.out.println("\nExisting Sales:");
+                    sales.forEach(System.out::println);
+
+                    System.out.print("\nEnter Sale ID to void: ");
+                    int saleId;
+                    try {
+                        saleId = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid Sale ID.");
+                        break;
+                    }
+
+                    Sale sale = salesService.getSaleById(saleId);
+                    if (sale == null) {
+                        System.out.println("Sale not found.");
+                        break;
+                    }
+
+                    // Remove sale
+                    salesService.removeSale(saleId);
+                    System.out.println("✓ Transaction voided successfully.");
+                }
+
+
+                case 14 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
