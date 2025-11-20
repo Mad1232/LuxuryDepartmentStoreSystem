@@ -44,7 +44,10 @@ public class Main {
             System.out.println("12. Search Product by Name/Brand");
             System.out.println("13. Void a Transaction");
             System.out.println("14. View Total Revenue Summary");
-            System.out.println("15. Quit");
+            System.out.println("15. Mark Discontinued Item");
+            System.out.println("16. Return an Item");
+            System.out.println("17. Revive Discontinued Item");
+            System.out.println("18. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -878,6 +881,67 @@ public class Main {
                 }
 
                 case 15 -> {
+                    System.out.println("\n===== Mark a Discontinued Item =====");
+                    //find item
+                    //remove item from products list
+                    //add item to discontinued list
+                    System.out.print("Enter item id: ");
+                    int id;
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid item ID.");
+                        break;
+                    }
+                    Product p = productService.getProductById(id);
+                    productService.removeProduct(id);
+                    productService.addToDiscontinued(p);
+                    System.out.println("Marked " + id + " as discontinued.");
+
+
+                }
+
+                case 16 -> {
+                    System.out.println("\n===== Return an Item =====");
+                    //find Item ID
+                    //find Sale ID
+                    //remove sale from sales table
+                    //increment invenmtory for item ID
+                    System.out.print("Enter sale id: ");
+                    int saleID;
+                    try {
+                        saleID = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid sale ID.");
+                        break;
+                    }
+                    Sale returningSale = salesService.getSaleById(saleID);
+                    salesService.removeSale(saleID);
+                    StoreInventoryItem inventoryID = inventoryService.getByProductAndStore(returningSale.getProductId(), returningSale.getStoreId());
+                    inventoryService.adjustQuantity(inventoryID.getId(), returningSale.getQuantity());
+
+                }
+
+                case 17 -> {
+                    System.out.println("\n===== Mark a Discontinued Item =====");
+                    //find item
+                    //remove item from products list
+                    //add item to discontinued list
+                    System.out.print("Enter item id: ");
+                    int id;
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid item ID.");
+                        break;
+                    }
+                    Product p = productService.getDiscontinuedProduct(id);
+                    productService.removeDiscontinuedProduct(id);
+                    productService.addProduct(p);
+                    System.out.println("Revived " + id + " from the Discontinued Products.");
+                }
+
+                case 18 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
