@@ -1029,7 +1029,7 @@ public class Main {
                 }
 
                 case 17 -> {
-                    System.out.println("\n===== Mark a Discontinued Item =====");
+                    System.out.println("\n===== Reviving a Discontinued Item =====");
                     //find item
                     //remove item from products list
                     //add item to discontinued list
