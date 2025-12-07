@@ -16,7 +16,8 @@ public class ProductService {
 
     public void addProduct(Product product) {
         String line = product.getId() + "," + product.getName() + "," +
-                product.getCategory() + "," + product.getPrice() + "," + product.getBrand();
+                product.getCategory() + "," + product.getPrice() + "," +
+                product.getBrand() + "," + product.isLimitedEdition() + "," + product.getReleaseDate();
         FileHandler.writeLine(FILE_PATH, line);
     }
 
@@ -52,7 +53,8 @@ public class ProductService {
 
     public void addToDiscontinued(Product product) {
         String line = product.getId() + "," + product.getName() + "," +
-                product.getCategory() + "," + product.getPrice() + "," + product.getBrand();
+                product.getCategory() + "," + product.getPrice() + "," + product.getBrand()
+                + "," + product.isLimitedEdition() + "," + product.getReleaseDate();
         FileHandler.writeLine(DISCONTINUED_FILEPATH, line);
     }
 
@@ -74,16 +76,33 @@ public class ProductService {
     private List<Product> getAllDiscontinuedProducts() {
         List<String> lines = FileHandler.readAllLines(DISCONTINUED_FILEPATH);
         List<Product> products = new ArrayList<>();
+
         for (String line : lines) {
             String[] parts = line.split(",");
-            if (parts.length >= 5) {
+
+            if (parts.length >= 7) {
                 try {
-                    int id = Integer.parseInt(parts[0]);
-                    String name = parts[1];
-                    String category = parts[2];
-                    double price = Double.parseDouble(parts[3]);
-                    String brand = parts[4];
-                    products.add(new Product(id, name, category, price, brand));
+                    int id = Integer.parseInt(parts[0].trim());
+                    String name = parts[1].trim();
+                    String category = parts[2].trim();
+                    double price = Double.parseDouble(parts[3].trim());
+                    String brand = parts[4].trim();
+
+                    // New fields:
+                    boolean limitedEdition = Boolean.parseBoolean(parts[5].trim());
+                    String releaseDate = parts[6].trim();
+
+                    // Updated constructor call
+                    products.add(new Product(
+                            id,
+                            name,
+                            category,
+                            price,
+                            brand,
+                            limitedEdition,
+                            releaseDate
+                    ));
+
                 } catch (NumberFormatException e) {
                     System.out.println("Skipping invalid line: " + line);
                 }
@@ -113,14 +132,30 @@ public class ProductService {
         List<Product> products = new ArrayList<>();
         for (String line : lines) {
             String[] parts = line.split(",");
-            if (parts.length >= 5) {
+
+            if (parts.length >= 7) {
                 try {
-                    int id = Integer.parseInt(parts[0]);
-                    String name = parts[1];
-                    String category = parts[2];
-                    double price = Double.parseDouble(parts[3]);
-                    String brand = parts[4];
-                    products.add(new Product(id, name, category, price, brand));
+                    int id = Integer.parseInt(parts[0].trim());
+                    String name = parts[1].trim();
+                    String category = parts[2].trim();
+                    double price = Double.parseDouble(parts[3].trim());
+                    String brand = parts[4].trim();
+
+                    // New fields
+                    boolean limitedEdition = Boolean.parseBoolean(parts[5].trim());
+                    String releaseDate = parts[6].trim();
+
+                    // Updated constructor
+                    products.add(new Product(
+                            id,
+                            name,
+                            category,
+                            price,
+                            brand,
+                            limitedEdition,
+                            releaseDate
+                    ));
+
                 } catch (NumberFormatException e) {
                     System.out.println("Skipping invalid line: " + line);
                 }

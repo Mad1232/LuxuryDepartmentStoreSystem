@@ -91,8 +91,37 @@ public class Main {
                         }
                     }
 
+                    // Limited Edition
+                    boolean limited_edition;
+                    while (true) {
+                        System.out.print("Is this limited edition? (true/false): ");
+                        String input = sc.nextLine().trim().toUpperCase();
+
+                        if (input.equals("Y")) {
+                            limited_edition = true;
+                            break;
+                        } else if (input.equals("N")) {
+                            limited_edition = false;
+                            break;
+                        } else {
+                            System.out.println("Invalid input. Please enter Y or N.");
+                        }
+                    }
+
+                    // Release Date
+                    String releaseDate;
+                    while (true) {
+                        System.out.print("Enter release date (mm/dd/yy): ");
+                        releaseDate = sc.nextLine().trim();
+                        // Basic format check using regex
+                        if (releaseDate.matches("\\d{2}/\\d{2}/\\d{2}")) {
+                            break;
+                        }
+                        System.out.println("Invalid date. Please use mm/dd/yy format.");
+                    }
+
                     // Add product
-                    Product product = new Product(id, name, brand, price, brand);
+                    Product product = new Product(id, name, brand, price, brand, limited_edition,releaseDate);
                     productService.addProduct(product);
                     System.out.println("Product added successfully! Product ID: " + id);
                 }
@@ -133,7 +162,15 @@ public class Main {
                     // Get old price before change for logging
                     double oldPrice = item.getPrice();
 
-                    Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]), split[4]);
+                    Product newItem = new Product(
+                            item.getId(),
+                            split[1],
+                            split[2],
+                            Double.parseDouble(split[3]),
+                            split[4],
+                            Boolean.parseBoolean(split[5]),
+                            split[6]
+                    );
 
                     // Get new price after change for logging
                     double newPrice = newItem.getPrice();
