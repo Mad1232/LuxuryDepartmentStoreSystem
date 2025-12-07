@@ -11,6 +11,8 @@ import model.Role;
 import model.Truck;
 import model.StoreInventoryItem;
 import service.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import util.PriceHistoryHandler;
@@ -1227,29 +1229,61 @@ public class Main {
                     System.out.println("Revived " + id + " from the Discontinued Products.");
                 }
 
-                case 19 ->{
+                case 19 -> {
                     System.out.println("\n===== View Limited Items & Release Date =====");
                     var products = productService.getAllProducts();
-                    if(products.isEmpty()){
+                    List<Product> limitedProducts = new ArrayList<>();
+
+                    if (products.isEmpty()) {
                         System.out.println("No matching products found.");
-                    }
-                    else{
-                        for(Product p : products){
-                            if(p.isLimitedEdition() == true){
+                    } else {
+                        System.out.println("Limited Edition Products:");
+                        for (Product p : products) {
+                            if (p.isLimitedEdition()) {
                                 System.out.println(p);
+                                limitedProducts.add(p);
                             }
                         }
+
+                        if (limitedProducts.isEmpty()) {
+                            System.out.println("No limited edition products available.");
+                            break;
+                        }
                     }
-                    System.out.print("Do you want to check if any of these items have been reserved? (yes/no): ");
+
                     Scanner scnr = new Scanner(System.in);
-                    String answer = scnr.nextLine();
+                    String answer = "";
+                    while (true) {
+                        System.out.print("Do you want to check if any of these items have been reserved? (yes/no): ");
+                        answer = scnr.nextLine().trim();
+                        if (answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("no")) {
+                            break;
+                        }
+                        System.out.println("Invalid input. Please enter 'yes' or 'no'.");
+                    }
 
                     if (answer.equalsIgnoreCase("yes")) {
-                        System.out.println("Please enter the id of the product to check for reservations: ");
-                        int product_id = Integer.parseInt(scnr.nextLine());
+                        int product_id;
+                        while (true) {
+                            try {
+                                System.out.print("Please enter the ID of the product to check for reservations: ");
+                                int inputId = Integer.parseInt(scnr.nextLine().trim());
+
+                                final int tempId = inputId; // effectively final for lambda
+                                boolean validId = limitedProducts.stream().anyMatch(p -> p.getId() == tempId);
+                                if (!validId) {
+                                    System.out.println("Invalid product ID. Please enter an ID from the list above.");
+                                    continue;
+                                }
+
+                                product_id = inputId; // now safe to assign
+                                break;
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid input. Please enter a valid numeric product ID.");
+                            }
+                        }
 
                         List<Reservation> productReservations = reservationService.getReservationsForProduct(product_id);
-
                         if (productReservations.isEmpty()) {
                             System.out.println("No reservations found for this product.");
                             System.out.println("Feel free to reserve it!");
