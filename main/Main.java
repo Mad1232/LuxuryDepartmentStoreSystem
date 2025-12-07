@@ -10,15 +10,11 @@ import model.Employee;
 import model.Role;
 import model.Truck;
 import model.StoreInventoryItem;
-import service.ProductService;
-import service.SalesService;
-import service.StoreService;
-import service.InventoryService;
-import service.TruckService;
-import java.util.ArrayList;
+import service.*;
 import java.util.List;
 import java.util.Scanner;
 import util.PriceHistoryHandler;
+import model.Reservation;
 
 public class Main {
     public static void main(String[] args) {
@@ -28,6 +24,7 @@ public class Main {
         StoreService storeService = new StoreService();
         InventoryService inventoryService = new InventoryService();
         TruckService truckService = new TruckService();
+        ReservationService reservationService = new ReservationService();
 
         boolean running = true;
 
@@ -52,7 +49,8 @@ public class Main {
             System.out.println("16. Mark Discontinued Item");
             System.out.println("17. Return an Item");
             System.out.println("18. Revive Discontinued Item");
-            System.out.println("19. Quit");
+            System.out.println("19. View Limited Items & Release Date");
+            System.out.println("20. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -1229,7 +1227,42 @@ public class Main {
                     System.out.println("Revived " + id + " from the Discontinued Products.");
                 }
 
-                case 19 -> {
+                case 19 ->{
+                    System.out.println("\n===== View Limited Items & Release Date =====");
+                    var products = productService.getAllProducts();
+                    if(products.isEmpty()){
+                        System.out.println("No matching products found.");
+                    }
+                    else{
+                        for(Product p : products){
+                            if(p.isLimitedEdition() == true){
+                                System.out.println(p);
+                            }
+                        }
+                    }
+                    System.out.print("Do you want to check if any of these items have been reserved? (yes/no): ");
+                    Scanner scnr = new Scanner(System.in);
+                    String answer = scnr.nextLine();
+
+                    if (answer.equalsIgnoreCase("yes")) {
+                        System.out.println("Please enter the id of the product to check for reservations: ");
+                        int product_id = Integer.parseInt(scnr.nextLine());
+
+                        List<Reservation> productReservations = reservationService.getReservationsForProduct(product_id);
+
+                        if (productReservations.isEmpty()) {
+                            System.out.println("No reservations found for this product.");
+                            System.out.println("Feel free to reserve it!");
+                        } else {
+                            System.out.println("Reservations for this product:");
+                            for (Reservation r : productReservations) {
+                                System.out.println(r);
+                            }
+                        }
+                    }
+                }
+
+                case 20 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
