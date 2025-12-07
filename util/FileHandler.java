@@ -48,15 +48,12 @@ public class FileHandler {
         List<String> lines = readAllLines(filename);
         for(String line : lines) {
             String[] parts = line.split(",");
-            if(parts.length == 5) {
+            if(parts.length == 4) {
                 int id = Integer.parseInt(parts[0]);
                 int productId = Integer.parseInt(parts[1]);
                 String customerName = parts[2];
                 String dateReserved = parts[3];
-                boolean fulfilled = Boolean.parseBoolean(parts[4]);
-
                 Reservation r = new Reservation(id, productId, customerName, dateReserved);
-                if(fulfilled) r.markFulfilled();
                 reservations.add(r);
             }
         }

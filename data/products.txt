@@ -7,5 +7,8 @@
 108,SlickBack Sunglasses,Accessories,465.5,Versace,false,01/01/25
 109,Velvet Evening Gown,Clothing,2750.0,Dior,false,01/01/25
 110,Black Hoodie,Clothing,995.0,Balenciaga,true,01/01/25
-111,White Hoodie,Clothing,2086.5,Gucci,false,01/01/25
-114,Hairclip,Gucci,800.0,Gucci,true,01/01/25
+111,White Hoodie,Clothing,2086.5,Gucci,false,01/01/26
+112,Hairclip,Gucci,800.0,Gucci,true,01/01/26
+113,McBook,Windows,2500.0,Windows,true,04/01/26
+114,Laptop,Apple,3000.0,Apple,true,05/11/26
+115,Joggers,H&M,800.0,H&M,true,11/19/26
