@@ -10,15 +10,13 @@ import model.Employee;
 import model.Role;
 import model.Truck;
 import model.StoreInventoryItem;
-import service.ProductService;
-import service.SalesService;
-import service.StoreService;
-import service.InventoryService;
-import service.TruckService;
+import service.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import util.PriceHistoryHandler;
+import model.Reservation;
 
 public class Main {
     public static void main(String[] args) {
@@ -28,6 +26,7 @@ public class Main {
         StoreService storeService = new StoreService();
         InventoryService inventoryService = new InventoryService();
         TruckService truckService = new TruckService();
+        ReservationService reservationService = new ReservationService();
 
         boolean running = true;
 
@@ -52,7 +51,8 @@ public class Main {
             System.out.println("16. Mark Discontinued Item");
             System.out.println("17. Return an Item");
             System.out.println("18. Revive Discontinued Item");
-            System.out.println("19. Quit");
+            System.out.println("19. View Limited Items & Release Date");
+            System.out.println("20. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -91,8 +91,37 @@ public class Main {
                         }
                     }
 
+                    // Limited Edition
+                    boolean limited_edition;
+                    while (true) {
+                        System.out.print("Is this limited edition? (true/false): ");
+                        String input = sc.nextLine().trim().toUpperCase();
+
+                        if (input.equals("Y")) {
+                            limited_edition = true;
+                            break;
+                        } else if (input.equals("N")) {
+                            limited_edition = false;
+                            break;
+                        } else {
+                            System.out.println("Invalid input. Please enter Y or N.");
+                        }
+                    }
+
+                    // Release Date
+                    String releaseDate;
+                    while (true) {
+                        System.out.print("Enter release date (mm/dd/yy): ");
+                        releaseDate = sc.nextLine().trim();
+                        // Basic format check using regex
+                        if (releaseDate.matches("\\d{2}/\\d{2}/\\d{2}")) {
+                            break;
+                        }
+                        System.out.println("Invalid date. Please use mm/dd/yy format.");
+                    }
+
                     // Add product
-                    Product product = new Product(id, name, brand, price, brand);
+                    Product product = new Product(id, name, brand, price, brand, limited_edition,releaseDate);
                     productService.addProduct(product);
                     System.out.println("Product added successfully! Product ID: " + id);
                 }
@@ -133,7 +162,15 @@ public class Main {
                     // Get old price before change for logging
                     double oldPrice = item.getPrice();
 
-                    Product newItem = new Product(item.getId(),split[1],split[2],Double.parseDouble(split[3]), split[4]);
+                    Product newItem = new Product(
+                            item.getId(),
+                            split[1],
+                            split[2],
+                            Double.parseDouble(split[3]),
+                            split[4],
+                            Boolean.parseBoolean(split[5]),
+                            split[6]
+                    );
 
                     // Get new price after change for logging
                     double newPrice = newItem.getPrice();
@@ -1193,6 +1230,73 @@ public class Main {
                 }
 
                 case 19 -> {
+                    System.out.println("\n===== View Limited Items & Release Date =====");
+                    var products = productService.getAllProducts();
+                    List<Product> limitedProducts = new ArrayList<>();
+
+                    if (products.isEmpty()) {
+                        System.out.println("No matching products found.");
+                    } else {
+                        System.out.println("Limited Edition Products:");
+                        for (Product p : products) {
+                            if (p.isLimitedEdition()) {
+                                System.out.println(p);
+                                limitedProducts.add(p);
+                            }
+                        }
+
+                        if (limitedProducts.isEmpty()) {
+                            System.out.println("No limited edition products available.");
+                            break;
+                        }
+                    }
+
+                    Scanner scnr = new Scanner(System.in);
+                    String answer = "";
+                    while (true) {
+                        System.out.print("Do you want to check if any of these items have been reserved? (yes/no): ");
+                        answer = scnr.nextLine().trim();
+                        if (answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("no")) {
+                            break;
+                        }
+                        System.out.println("Invalid input. Please enter 'yes' or 'no'.");
+                    }
+
+                    if (answer.equalsIgnoreCase("yes")) {
+                        int product_id;
+                        while (true) {
+                            try {
+                                System.out.print("Please enter the ID of the product to check for reservations: ");
+                                int inputId = Integer.parseInt(scnr.nextLine().trim());
+
+                                final int tempId = inputId; // effectively final for lambda
+                                boolean validId = limitedProducts.stream().anyMatch(p -> p.getId() == tempId);
+                                if (!validId) {
+                                    System.out.println("Invalid product ID. Please enter an ID from the list above.");
+                                    continue;
+                                }
+
+                                product_id = inputId; // now safe to assign
+                                break;
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid input. Please enter a valid numeric product ID.");
+                            }
+                        }
+
+                        List<Reservation> productReservations = reservationService.getReservationsForProduct(product_id);
+                        if (productReservations.isEmpty()) {
+                            System.out.println("No reservations found for this product.");
+                            System.out.println("Feel free to reserve it!");
+                        } else {
+                            System.out.println("Reservations for this product:");
+                            for (Reservation r : productReservations) {
+                                System.out.println(r);
+                            }
+                        }
+                    }
+                }
+
+                case 20 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
