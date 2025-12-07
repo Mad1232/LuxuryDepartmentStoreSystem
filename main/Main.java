@@ -1236,54 +1236,55 @@ public class Main {
 
                     if (products.isEmpty()) {
                         System.out.println("No matching products found.");
-                    } else {
-                        System.out.println("Limited Edition Products:");
-                        for (Product p : products) {
-                            if (p.isLimitedEdition()) {
-                                System.out.println(p);
-                                limitedProducts.add(p);
-                            }
-                        }
+                        break;
+                    }
 
-                        if (limitedProducts.isEmpty()) {
-                            System.out.println("No limited edition products available.");
-                            break;
+                    System.out.println("Limited Edition Products:");
+                    for (Product p : products) {
+                        if (p.isLimitedEdition()) {
+                            System.out.println(p);
+                            limitedProducts.add(p);
                         }
                     }
 
+                    if (limitedProducts.isEmpty()) {
+                        System.out.println("No limited edition products available.");
+                        break;
+                    }
+
                     Scanner scnr = new Scanner(System.in);
+
+                    // Ask if user wants to check reservations
                     String answer = "";
                     while (true) {
                         System.out.print("Do you want to check if any of these items have been reserved? (yes/no): ");
                         answer = scnr.nextLine().trim();
-                        if (answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("no")) {
-                            break;
-                        }
+                        if (answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("no")) break;
                         System.out.println("Invalid input. Please enter 'yes' or 'no'.");
                     }
 
                     if (answer.equalsIgnoreCase("yes")) {
-                        int product_id;
+                        int checkId;
                         while (true) {
                             try {
                                 System.out.print("Please enter the ID of the product to check for reservations: ");
                                 int inputId = Integer.parseInt(scnr.nextLine().trim());
 
-                                final int tempId = inputId; // effectively final for lambda
+                                final int tempId = inputId;
                                 boolean validId = limitedProducts.stream().anyMatch(p -> p.getId() == tempId);
                                 if (!validId) {
                                     System.out.println("Invalid product ID. Please enter an ID from the list above.");
                                     continue;
                                 }
 
-                                product_id = inputId; // now safe to assign
+                                checkId = inputId;
                                 break;
                             } catch (NumberFormatException e) {
                                 System.out.println("Invalid input. Please enter a valid numeric product ID.");
                             }
                         }
 
-                        List<Reservation> productReservations = reservationService.getReservationsForProduct(product_id);
+                        List<Reservation> productReservations = reservationService.getReservationsForProduct(checkId);
                         if (productReservations.isEmpty()) {
                             System.out.println("No reservations found for this product.");
                             System.out.println("Feel free to reserve it!");
@@ -1293,6 +1294,51 @@ public class Main {
                                 System.out.println(r);
                             }
                         }
+                    }
+
+                    // Ask if user wants to reserve
+                    while (true) {
+                        System.out.print("Do you want to reserve an item? (yes/no): ");
+                        answer = scnr.nextLine().trim();
+                        if (answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("no")) break;
+                        System.out.println("Invalid input. Please enter 'yes' or 'no'.");
+                    }
+
+                    if (answer.equalsIgnoreCase("yes")) {
+                        int reserveId;
+                        while (true) {
+                            try {
+                                System.out.print("Enter the product ID you want to reserve: ");
+                                int inputId = Integer.parseInt(scnr.nextLine().trim());
+
+                                final int tempId = inputId;
+                                boolean validId = limitedProducts.stream().anyMatch(p -> p.getId() == tempId);
+                                if (!validId) {
+                                    System.out.println("Invalid product ID. Please enter an ID from the list above.");
+                                    continue;
+                                }
+
+                                // Check if product is already reserved
+                                List<Reservation> existingReservations = reservationService.getReservationsForProduct(inputId);
+                                if (!existingReservations.isEmpty()) {
+                                    System.out.println("Sorry, this product has already been reserved.");
+                                    continue;
+                                }
+
+                                reserveId = inputId;
+                                break;
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid input. Please enter a numeric product ID.");
+                            }
+                        }
+
+                        System.out.print("Enter your name: ");
+                        String customerName = scnr.nextLine().trim();
+
+                        // Create and save the reservation
+                        Reservation newReservation = reservationService.createReservation(reserveId, customerName);
+                        System.out.println("Reservation successful! Details:");
+                        System.out.println(newReservation);
                     }
                 }
 
