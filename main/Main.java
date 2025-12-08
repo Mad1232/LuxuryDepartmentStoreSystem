@@ -55,7 +55,8 @@ public class Main {
             System.out.println("18. Return an Item");
             System.out.println("19. Revive Discontinued Item");
             System.out.println("20. View Limited Items & Release Date");
-            System.out.println("21. Quit");
+            System.out.println("21. Submit and View Customer Feedback");
+            System.out.println("22. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -1661,8 +1662,117 @@ public class Main {
                     }
                 }
 
-
                 case 21 -> {
+                    System.out.println("\n===== Customer Feedback and Rating =====");
+
+                    System.out.println("1. Submit Feedback");
+                    System.out.println("2. View All Feedback");
+                    System.out.print("Select option: ");
+                    int fbChoice;
+                    try {
+                        fbChoice = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid input.");
+                        break;
+                    }
+
+                    String feedbackFilePath = "data/feedback.txt";
+                    java.io.File feedbackFile = new java.io.File(feedbackFilePath);
+
+                    switch (fbChoice) {
+                        case 1 -> {
+                            // Submit Feedback
+                            System.out.print("Enter Product ID: ");
+                            int productId;
+                            try {
+                                productId = Integer.parseInt(sc.nextLine());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid Product ID.");
+                                break;
+                            }
+
+                            Product product = productService.getProductById(productId);
+                            if (product == null) {
+                                System.out.println("Product not found.");
+                                break;
+                            }
+
+                            System.out.print("Enter your name: ");
+                            String customerName = sc.nextLine().trim();
+                            if (customerName.isEmpty()) {
+                                System.out.println("Name cannot be empty.");
+                                break;
+                            }
+
+                            int rating;
+                            while (true) {
+                                System.out.print("Enter rating (1-5): ");
+                                try {
+                                    rating = Integer.parseInt(sc.nextLine());
+                                    if (rating >= 1 && rating <= 5) break;
+                                    System.out.println("Rating must be between 1 and 5.");
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid rating.");
+                                }
+                            }
+
+                            System.out.print("Enter your feedback: ");
+                            String feedback = sc.nextLine().trim();
+                            if (feedback.isEmpty()) feedback = "No comments provided.";
+
+                            // Write feedback to file
+                            try (java.io.FileWriter fw = new java.io.FileWriter(feedbackFile, true)) {
+                                fw.write(productId + "," + customerName + "," + rating + "," + feedback.replace(",", ";") + "\n");
+                                System.out.println("✓ Thank you! Your feedback has been recorded.");
+                            } catch (Exception e) {
+                                System.out.println("Error saving feedback: " + e.getMessage());
+                            }
+                        }
+
+                        case 2 -> {
+                            // View Feedback
+                            if (!feedbackFile.exists()) {
+                                System.out.println("No feedback available yet.");
+                                break;
+                            }
+
+                            System.out.println("\n===== All Customer Feedback =====");
+                            try (java.util.Scanner reader = new java.util.Scanner(feedbackFile)) {
+                                if (!reader.hasNextLine()) {
+                                    System.out.println("No feedback available.");
+                                    break;
+                                }
+                                while (reader.hasNextLine()) {
+                                    String line = reader.nextLine();
+                                    String[] parts = line.split(",", 4);
+                                    if (parts.length < 4) continue;
+                                    int productId = Integer.parseInt(parts[0]);
+                                    Product product = productService.getProductById(productId);
+                                    String productName = (product != null) ? product.getName() : "Unknown Product";
+                                    System.out.println("Product: " + productName);
+                                    System.out.println("Customer: " + parts[1]);
+                                    System.out.println("Rating: " + parts[2] + "/5");
+                                    System.out.println("Feedback: " + parts[3]);
+                                    System.out.println("---------------------------------------");
+                                }
+                            } catch (Exception e) {
+                                System.out.println("Error reading feedback: " + e.getMessage());
+                            }
+                        }
+
+                        default -> System.out.println("Invalid option.");
+                    }
+                }
+
+
+
+
+
+
+
+
+
+                case 22 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
