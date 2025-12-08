@@ -1663,106 +1663,130 @@ public class Main {
                 }
 
                 case 21 -> {
-                    System.out.println("\n===== Customer Feedback and Rating =====");
+                    System.out.println("\n===== Customer Feedback & Rating =====");
+                    FeedbackService feedbackService = new FeedbackService();
 
-                    System.out.println("1. Submit Feedback");
-                    System.out.println("2. View All Feedback");
+
+                    System.out.println("1. Leave Feedback");
+                    System.out.println("2. View Feedback for a Product");
                     System.out.print("Select option: ");
-                    int fbChoice;
-                    try {
-                        fbChoice = Integer.parseInt(sc.nextLine());
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input.");
-                        break;
-                    }
-
-                    String feedbackFilePath = "data/feedback.txt";
-                    java.io.File feedbackFile = new java.io.File(feedbackFilePath);
+                    int fbChoice = Integer.parseInt(sc.nextLine().trim());
 
                     switch (fbChoice) {
                         case 1 -> {
-                            // Submit Feedback
+                            // --- Product ID validation ---
                             System.out.print("Enter Product ID: ");
-                            int productId;
+                            String pidInput = sc.nextLine().trim();
+                            int pid;
                             try {
-                                productId = Integer.parseInt(sc.nextLine());
+                                pid = Integer.parseInt(pidInput);
                             } catch (NumberFormatException e) {
-                                System.out.println("Invalid Product ID.");
+                                System.out.println("Invalid Product ID. Please enter a numeric value.");
                                 break;
                             }
 
-                            Product product = productService.getProductById(productId);
-                            if (product == null) {
-                                System.out.println("Product not found.");
+                            if (productService.getProductById(pid) == null) {
+                                System.out.println("Invalid Product ID. No product found with ID " + pid + ".");
                                 break;
                             }
 
-                            System.out.print("Enter your name: ");
-                            String customerName = sc.nextLine().trim();
-                            if (customerName.isEmpty()) {
+                            // --- Customer Name validation ---
+                            System.out.print("Enter Your Name: ");
+                            String name = sc.nextLine().trim();
+                            if (name.isEmpty()) {
                                 System.out.println("Name cannot be empty.");
                                 break;
                             }
 
-                            int rating;
-                            while (true) {
-                                System.out.print("Enter rating (1-5): ");
-                                try {
-                                    rating = Integer.parseInt(sc.nextLine());
-                                    if (rating >= 1 && rating <= 5) break;
+                            // --- Product Rating validation ---
+                            System.out.print("Enter Product Rating (1–5): ");
+                            int productRating;
+                            try {
+                                productRating = Integer.parseInt(sc.nextLine().trim());
+                                if (productRating < 1 || productRating > 5) {
                                     System.out.println("Rating must be between 1 and 5.");
-                                } catch (NumberFormatException e) {
-                                    System.out.println("Invalid rating.");
+                                    break;
                                 }
-                            }
-
-                            System.out.print("Enter your feedback: ");
-                            String feedback = sc.nextLine().trim();
-                            if (feedback.isEmpty()) feedback = "No comments provided.";
-
-                            // Write feedback to file
-                            try (java.io.FileWriter fw = new java.io.FileWriter(feedbackFile, true)) {
-                                fw.write(productId + "," + customerName + "," + rating + "," + feedback.replace(",", ";") + "\n");
-                                System.out.println("✓ Thank you! Your feedback has been recorded.");
-                            } catch (Exception e) {
-                                System.out.println("Error saving feedback: " + e.getMessage());
-                            }
-                        }
-
-                        case 2 -> {
-                            // View Feedback
-                            if (!feedbackFile.exists()) {
-                                System.out.println("No feedback available yet.");
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid input. Please enter a number between 1 and 5.");
                                 break;
                             }
 
-                            System.out.println("\n===== All Customer Feedback =====");
-                            try (java.util.Scanner reader = new java.util.Scanner(feedbackFile)) {
-                                if (!reader.hasNextLine()) {
-                                    System.out.println("No feedback available.");
+                            // --- Store Location validation ---
+                            System.out.print("Enter Store Location (or 'Online'): ");
+                            String store = sc.nextLine().trim();
+                            if (store.isEmpty()) store = "Online";
+
+                            // --- Purchase Experience validation ---
+                            System.out.print("Rate Purchase Experience (1–5): ");
+                            int expRating;
+                            try {
+                                expRating = Integer.parseInt(sc.nextLine().trim());
+                                if (expRating < 1 || expRating > 5) {
+                                    System.out.println("Experience rating must be between 1 and 5.");
                                     break;
                                 }
-                                while (reader.hasNextLine()) {
-                                    String line = reader.nextLine();
-                                    String[] parts = line.split(",", 4);
-                                    if (parts.length < 4) continue;
-                                    int productId = Integer.parseInt(parts[0]);
-                                    Product product = productService.getProductById(productId);
-                                    String productName = (product != null) ? product.getName() : "Unknown Product";
-                                    System.out.println("Product: " + productName);
-                                    System.out.println("Customer: " + parts[1]);
-                                    System.out.println("Rating: " + parts[2] + "/5");
-                                    System.out.println("Feedback: " + parts[3]);
-                                    System.out.println("---------------------------------------");
-                                }
-                            } catch (Exception e) {
-                                System.out.println("Error reading feedback: " + e.getMessage());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid input. Please enter a number between 1 and 5.");
+                                break;
                             }
+
+                            // --- Recommendation validation ---
+                            System.out.print("Would you recommend this product? (yes/no): ");
+                            String rec = sc.nextLine().trim().toLowerCase();
+                            if (!rec.equals("yes") && !rec.equals("y") && !rec.equals("no") && !rec.equals("n")) {
+                                System.out.println("Invalid input. Please enter yes or no.");
+                                break;
+                            }
+                            boolean recommend = rec.equals("yes") || rec.equals("y");
+
+                            // --- Comment validation ---
+                            System.out.print("Enter Comment: ");
+                            String comment = sc.nextLine().trim();
+                            if (comment.isEmpty()) {
+                                System.out.println("Comment cannot be empty.");
+                                break;
+                            }
+
+                            // --- Optional: Duplicate check (user+product) ---
+                            boolean alreadyLeftFeedback = feedbackService.getAllFeedbacks().stream()
+                                    .anyMatch(f -> f.getProductId() == pid &&
+                                            f.getCustomerName().equalsIgnoreCase(name));
+                            if (alreadyLeftFeedback) {
+                                System.out.println("You have already left feedback for this product. Thank you!");
+                                break;
+                            }
+
+                            // --- Add feedback ---
+                            feedbackService.addFeedbackFromUser(pid, name, productRating, expRating, recommend, comment, store);
+                            System.out.println("Thank you for your detailed feedback!");
+                        }
+
+                        case 2 -> {
+                            // --- Product ID validation for viewing feedback ---
+                            System.out.print("Enter Product ID to view feedback: ");
+                            String pidInput = sc.nextLine().trim();
+                            int pid;
+                            try {
+                                pid = Integer.parseInt(pidInput);
+                            } catch (NumberFormatException e) {
+                                System.out.println("Invalid Product ID. Please enter a numeric value.");
+                                break;
+                            }
+
+                            if (productService.getProductById(pid) == null) {
+                                System.out.println("Invalid Product ID. No product found with ID " + pid + ".");
+                                break;
+                            }
+
+                            feedbackService.printFeedbackForProduct(pid);
                         }
 
                         default -> System.out.println("Invalid option.");
                     }
                 }
+
+
 
 
 
