@@ -10,6 +10,7 @@ import model.Employee;
 import model.Role;
 import model.Truck;
 import model.StoreInventoryItem;
+import model.Payroll;
 import service.*;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class Main {
         StoreService storeService = new StoreService();
         InventoryService inventoryService = new InventoryService();
         TruckService truckService = new TruckService();
+        PayrollService payrollService = new PayrollService();
         ReservationService reservationService = new ReservationService();
 
         boolean running = true;
@@ -45,14 +47,15 @@ public class Main {
             System.out.println("10. Manage Employees");
             System.out.println("11. Manage Inventory");
             System.out.println("12. Manage Trucks");
-            System.out.println("13. Search Product by Name/Brand");
-            System.out.println("14. Void a Transaction");
-            System.out.println("15. View Total Revenue Summary");
-            System.out.println("16. Mark Discontinued Item");
-            System.out.println("17. Return an Item");
-            System.out.println("18. Revive Discontinued Item");
-            System.out.println("19. View Limited Items & Release Date");
-            System.out.println("20. Quit");
+            System.out.println("13. Manage Payroll");
+            System.out.println("14. Search Product by Name/Brand");
+            System.out.println("15. Void a Transaction");
+            System.out.println("16. View Total Revenue Summary");
+            System.out.println("17. Mark Discontinued Item");
+            System.out.println("18. Return an Item");
+            System.out.println("19. Revive Discontinued Item");
+            System.out.println("20. View Limited Items & Release Date");
+            System.out.println("21. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -1091,6 +1094,322 @@ public class Main {
                 }
 
                 case 13 -> {
+                    // Manage Payroll
+                    boolean payrollRunning = true;
+                    while (payrollRunning) {
+                        System.out.println("\n===== Manage Payroll =====");
+                        System.out.println("1. View All Payroll Records");
+                        System.out.println("2. View Pending Payrolls");
+                        System.out.println("3. Generate Payroll for Employee");
+                        System.out.println("4. Process Payroll Payment");
+                        System.out.println("5. View Payroll by Employee");
+                        System.out.println("6. View Payroll Summary");
+                        System.out.println("7. Edit Employee Salary");
+                        System.out.println("8. Back to Main Menu");
+                        System.out.print("Select option: ");
+                        int payrollChoice = sc.nextInt();
+                        sc.nextLine();
+
+                        switch (payrollChoice) {
+                            case 1 -> {
+                                // View All Payroll Records
+                                System.out.println("\n===== All Payroll Records =====");
+                                var payrolls = payrollService.getAllPayrolls();
+                                if (payrolls.isEmpty()) {
+                                    System.out.println("No payroll records found.");
+                                } else {
+                                    payrolls.forEach(System.out::println);
+                                }
+                            }
+                            case 2 -> {
+                                // View Pending Payrolls
+                                System.out.println("\n===== Pending Payrolls =====");
+                                var pending = payrollService.getPendingPayrolls();
+                                if (pending.isEmpty()) {
+                                    System.out.println("No pending payrolls.");
+                                } else {
+                                    pending.forEach(System.out::println);
+                                    System.out.printf("\nTotal Pending Amount: $%.2f%n", payrollService.getTotalPendingPayroll());
+                                }
+                            }
+                            case 3 -> {
+
+                                System.out.println("\n===== Generate Payroll =====");
+
+                                var employees = storeService.getAllEmployees();
+                                if (employees.isEmpty()) {
+                                    System.out.println("No employees found.");
+                                    break;
+                                }
+
+                                System.out.println("\nActive Employees:");
+                                employees.stream()
+                                        .filter(Employee::isActive)
+                                        .forEach(System.out::println);
+
+                                System.out.print("\nEnter employee ID: ");
+                                int empId;
+                                try {
+                                    empId = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid employee ID.");
+                                    break;
+                                }
+
+                                Employee employee = storeService.getEmployeeById(empId);
+                                if (employee == null) {
+                                    System.out.println("Employee not found.");
+                                    break;
+                                }
+
+                                if (!employee.isActive()) {
+                                    System.out.println("Cannot generate payroll for inactive employee.");
+                                    break;
+                                }
+
+                                System.out.println("\nSelected: " + employee.getName());
+                                System.out.println("Annual Salary: $" + String.format("%.2f", employee.getSalary()));
+
+                                System.out.println("\nPayroll Type:");
+                                System.out.println("1. Bi-Weekly (26 pay periods/year)");
+                                System.out.println("2. Monthly (12 pay periods/year)");
+                                System.out.print("Select type: ");
+                                int typeChoice;
+                                try {
+                                    typeChoice = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid choice.");
+                                    break;
+                                }
+
+                                System.out.print("Pay Period Start (MM/DD/YYYY): ");
+                                String periodStart = sc.nextLine().trim();
+
+                                System.out.print("Pay Period End (MM/DD/YYYY): ");
+                                String periodEnd = sc.nextLine().trim();
+
+                                System.out.print("Payment Date (MM/DD/YYYY): ");
+                                String payDate = sc.nextLine().trim();
+
+                                Payroll payroll;
+                                if (typeChoice == 1) {
+                                    payroll = payrollService.generateBiWeeklyPayroll(employee, periodStart, periodEnd, payDate);
+                                    System.out.println("Bi-weekly amount: $" + String.format("%.2f", payroll.getAmount()));
+                                } else if (typeChoice == 2) {
+                                    payroll = payrollService.generateMonthlyPayroll(employee, periodStart, periodEnd, payDate);
+                                    System.out.println("Monthly amount: $" + String.format("%.2f", payroll.getAmount()));
+                                } else {
+                                    System.out.println("Invalid payroll type.");
+                                    break;
+                                }
+
+                                payrollService.addPayroll(payroll);
+                                System.out.println("\n✓ Payroll generated successfully!");
+                                System.out.println(payroll);
+                            }
+                            case 4 -> {
+                                // Process Payroll Payment
+                                System.out.println("\n===== Process Payroll Payment =====");
+
+                                var pending = payrollService.getPendingPayrolls();
+                                if (pending.isEmpty()) {
+                                    System.out.println("No pending payrolls to process.");
+                                    break;
+                                }
+
+                                System.out.println("\nPending Payrolls:");
+                                pending.forEach(System.out::println);
+
+                                System.out.print("\nEnter payroll ID to mark as paid (or 0 to cancel): ");
+                                int payrollId;
+                                try {
+                                    payrollId = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid payroll ID.");
+                                    break;
+                                }
+
+                                if (payrollId == 0) {
+                                    System.out.println("Cancelled.");
+                                    break;
+                                }
+
+                                Payroll payroll = payrollService.getPayrollById(payrollId);
+                                if (payroll == null) {
+                                    System.out.println("Payroll not found.");
+                                    break;
+                                }
+
+                                if (!payroll.getStatus().equalsIgnoreCase("PENDING")) {
+                                    System.out.println("Payroll is not pending. Current status: " + payroll.getStatus());
+                                    break;
+                                }
+
+                                System.out.println("\nPayroll Details:");
+                                System.out.println(payroll);
+                                System.out.print("\nConfirm payment? (y/n): ");
+                                String confirm = sc.nextLine().trim().toLowerCase();
+
+                                if (confirm.equals("y") || confirm.equals("yes")) {
+                                    payrollService.updatePayrollStatus(payrollId, "PAID");
+                                    System.out.println("\n✓ Payroll marked as PAID successfully!");
+                                    System.out.println("Payment of $" + String.format("%.2f", payroll.getAmount()) +
+                                                     " to " + payroll.getEmployeeName() + " processed.");
+                                } else {
+                                    System.out.println("Payment cancelled.");
+                                }
+                            }
+                            case 5 -> {
+                                // View Payroll by Employee
+                                System.out.println("\n===== View Payroll by Employee =====");
+
+                                var employees = storeService.getAllEmployees();
+                                if (employees.isEmpty()) {
+                                    System.out.println("No employees found.");
+                                    break;
+                                }
+
+                                System.out.println("\nEmployees:");
+                                employees.forEach(System.out::println);
+
+                                System.out.print("\nEnter employee ID: ");
+                                int empId;
+                                try {
+                                    empId = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid employee ID.");
+                                    break;
+                                }
+
+                                Employee employee = storeService.getEmployeeById(empId);
+                                if (employee == null) {
+                                    System.out.println("Employee not found.");
+                                    break;
+                                }
+
+                                var empPayrolls = payrollService.getPayrollsByEmployee(empId);
+                                if (empPayrolls.isEmpty()) {
+                                    System.out.println("No payroll records for " + employee.getName());
+                                } else {
+                                    System.out.println("\n===== Payroll History for " + employee.getName() + " =====");
+                                    empPayrolls.forEach(System.out::println);
+
+                                    double totalPaid = empPayrolls.stream()
+                                            .filter(p -> p.getStatus().equalsIgnoreCase("PAID"))
+                                            .mapToDouble(Payroll::getAmount)
+                                            .sum();
+                                    System.out.printf("\nTotal Paid to Date: $%.2f%n", totalPaid);
+                                }
+                            }
+                            case 6 -> {
+                                // View Payroll Summary
+                                System.out.println("\n===== Payroll Summary =====");
+
+                                double totalPaid = payrollService.getTotalPayrollCost();
+                                double totalPending = payrollService.getTotalPendingPayroll();
+
+                                System.out.println("Total Paid Payroll: $" + String.format("%.2f", totalPaid));
+                                System.out.println("Total Pending Payroll: $" + String.format("%.2f", totalPending));
+                                System.out.println("----------------------------");
+                                System.out.println("Total Payroll Cost: $" + String.format("%.2f", totalPaid + totalPending));
+
+                                var allPayrolls = payrollService.getAllPayrolls();
+                                int paidCount = 0;
+                                int pendingCount = 0;
+                                int cancelledCount = 0;
+
+                                for (Payroll p : allPayrolls) {
+                                    switch (p.getStatus().toUpperCase()) {
+                                        case "PAID" -> paidCount++;
+                                        case "PENDING" -> pendingCount++;
+                                        case "CANCELLED" -> cancelledCount++;
+                                    }
+                                }
+
+                                System.out.println("\nPayroll Records Count:");
+                                System.out.println("  Paid: " + paidCount);
+                                System.out.println("  Pending: " + pendingCount);
+                                System.out.println("  Cancelled: " + cancelledCount);
+                                System.out.println("  Total: " + allPayrolls.size());
+                            }
+                            case 7 -> {
+                                // Edit Employee Salary
+                                System.out.println("\n===== Edit Employee Salary =====");
+
+                                var employees = storeService.getAllEmployees();
+                                if (employees.isEmpty()) {
+                                    System.out.println("No employees found.");
+                                    break;
+                                }
+
+                                System.out.println("\nEmployees:");
+                                employees.forEach(System.out::println);
+
+                                System.out.print("\nEnter employee ID to edit salary: ");
+                                int empId;
+                                try {
+                                    empId = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid employee ID.");
+                                    break;
+                                }
+
+                                Employee employee = storeService.getEmployeeById(empId);
+                                if (employee == null) {
+                                    System.out.println("Employee not found.");
+                                    break;
+                                }
+
+                                System.out.println("\nCurrent Employee Info:");
+                                System.out.println(employee);
+                                System.out.println("Current Annual Salary: $" + String.format("%.2f", employee.getSalary()));
+
+                                System.out.print("\nEnter new annual salary: $");
+                                double newSalary;
+                                try {
+                                    newSalary = Double.parseDouble(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid salary amount.");
+                                    break;
+                                }
+
+                                if (newSalary < 0) {
+                                    System.out.println("Salary cannot be negative.");
+                                    break;
+                                }
+
+                                System.out.print("\nConfirm salary change from $" + String.format("%.2f", employee.getSalary()) +
+                                               " to $" + String.format("%.2f", newSalary) + "? (y/n): ");
+                                String confirm = sc.nextLine().trim().toLowerCase();
+
+                                if (confirm.equals("y") || confirm.equals("yes")) {
+                                    Employee updatedEmployee = new Employee(
+                                        employee.getEmployeeId(),
+                                        employee.getName(),
+                                        employee.getRole(),
+                                        newSalary,
+                                        employee.isActive(),
+                                        employee.getStoreId()
+                                    );
+                                    storeService.editEmployee(updatedEmployee);
+                                    System.out.println("\n✓ Salary updated successfully!");
+                                    System.out.println("New salary: $" + String.format("%.2f", newSalary));
+                                } else {
+                                    System.out.println("Salary change cancelled.");
+                                }
+                            }
+                            case 8 -> {
+                                // Back to main menu
+                                payrollRunning = false;
+                            }
+                            default -> System.out.println("Invalid option.");
+                        }
+                    }
+                }
+
+
+
+                case 14 -> {
                     System.out.println("\n===== Search Product by Name/Brand =====");
 
                     String keyword;
@@ -1130,7 +1449,7 @@ public class Main {
                     }
                 }
                 
-                case 14 -> {
+                case 15 -> {
                     System.out.println("\n===== Void a Transaction =====");
 
                     var sales = salesService.getAllSales();
@@ -1163,12 +1482,12 @@ public class Main {
                 }
 
                 // View Total Revenue Summary
-                case 15 -> {
+                case 16 -> {
                     System.out.println("\n===== Total Revenue Summary =====");
                     salesService.printRevenueSummary(storeService, productService);
                 }
 
-                case 16 -> {
+                case 17 -> {
                     System.out.println("\n===== Mark a Discontinued Item =====");
                     //find item
                     //remove item from products list
@@ -1189,7 +1508,7 @@ public class Main {
 
                 }
 
-                case 17 -> {
+                case 18 -> {
                     System.out.println("\n===== Return an Item =====");
                     //find Item ID
                     //find Sale ID
@@ -1210,7 +1529,7 @@ public class Main {
 
                 }
 
-                case 18 -> {
+                case 19 -> {
                     System.out.println("\n===== Reviving a Discontinued Item =====");
                     //find item
                     //remove item from products list
@@ -1229,7 +1548,7 @@ public class Main {
                     System.out.println("Revived " + id + " from the Discontinued Products.");
                 }
 
-                case 19 -> {
+                case 20 -> {
                     System.out.println("\n===== View Limited Items & Release Date =====");
                     var products = productService.getAllProducts();
                     List<Product> limitedProducts = new ArrayList<>();
@@ -1342,7 +1661,8 @@ public class Main {
                     }
                 }
 
-                case 20 -> {
+
+                case 21 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
