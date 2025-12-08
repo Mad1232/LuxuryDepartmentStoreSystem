@@ -17,9 +17,10 @@ public class Sale {
     private double taxAmount;
     private double totalWithTax;
     private String timestamp;
-    private int storeId; // store where the sale happened
+    private int storeId; // store where the sale happened\
+    private boolean isInstallment;
 
-    public Sale(int saleId, int productId, String productName, int quantity, double unitPrice, int storeId) {
+    public Sale(int saleId, int productId, String productName, int quantity, double unitPrice, int storeId, boolean isInstallment) {
         this.saleId = saleId;
         this.productId = productId;
         this.productName = productName;
@@ -30,6 +31,7 @@ public class Sale {
         this.taxAmount = this.totalPrice * TAX_RATE;
         this.totalWithTax = this.totalPrice + this.taxAmount;
         this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.isInstallment = isInstallment;
     }
 
     public int getSaleId() { return saleId; }
@@ -68,13 +70,13 @@ public class Sale {
 
     @Override
     public String toString() {
-        return saleId + "," + productId + "," + productName + "," + quantity + "," + unitPrice + "," + totalPrice + "," + taxAmount + "," + totalWithTax + "," + storeId + "," + timestamp;
+        return saleId + "," + productId + "," + productName + "," + quantity + "," + unitPrice + "," + totalPrice + "," + taxAmount + "," + totalWithTax + "," + storeId + "," + timestamp + "," + isInstallment;
     }
 
     public static Sale fromLine(String line) {
         // Split into parts. We expect either the old format (9 parts) or new (10 parts).
         String[] parts = line.split(",");
-        if (parts.length < 9) return null; // not enough data
+        if (parts.length < 10) return null; // not enough data
         try {
             int sid = Integer.parseInt(parts[0]);
             int pid = Integer.parseInt(parts[1]);
@@ -82,17 +84,19 @@ public class Sale {
             int qty = Integer.parseInt(parts[3]);
             double up = Double.parseDouble(parts[4]);
 
-            if (parts.length >= 10) {
+            if (parts.length >= 11) {
                 // New format: has storeId at index 8 and timestamp at index 9
                 int storeId = Integer.parseInt(parts[8]);
                 String ts = parts[9];
-                Sale s = new Sale(sid, pid, pname, qty, up, storeId);
+                boolean install = Boolean.parseBoolean(parts[10]);
+                Sale s = new Sale(sid, pid, pname, qty, up, storeId, install);
                 s.timestamp = ts;
                 return s;
             } else {
                 // Legacy format: no storeId, timestamp at index 8
                 String ts = parts[8];
-                Sale s = new Sale(sid, pid, pname, qty, up, 0); // unknown store -> 0
+                boolean install = Boolean.parseBoolean(parts[9]);
+                Sale s = new Sale(sid, pid, pname, qty, up, 0, install); // unknown store -> 0
                 s.timestamp = ts;
                 return s;
             }

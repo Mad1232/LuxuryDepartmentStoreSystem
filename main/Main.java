@@ -13,6 +13,7 @@ import model.StoreInventoryItem;
 import model.Payroll;
 import service.*;
 
+import java.awt.print.PrinterGraphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -56,7 +57,8 @@ public class Main {
             System.out.println("19. Revive Discontinued Item");
             System.out.println("20. View Limited Items & Release Date");
             System.out.println("21. Submit and View Customer Feedback");
-            System.out.println("22. Quit");
+            System.out.println("22. Pay with a Payment Plan");
+            System.out.println("23. Quit");
             System.out.print("Select option: ");
             int choice = sc.nextInt();
             sc.nextLine(); // clear buffer
@@ -331,6 +333,12 @@ public class Main {
 
                     // Process purchase
                     boolean allSuccessful = true;
+                    System.out.println("Are you using an installment plan?");
+                    boolean isInstallment = false;
+                    String choise = sc.nextLine();
+                    if(choise.equalsIgnoreCase("yes") || choise.equalsIgnoreCase("y")){
+                        isInstallment = true;
+                    }
                     for (int i = 0; i < cart.size(); i++) {
                         StoreInventoryItem inv = cart.get(i);
                         Product p = productService.getProductById(inv.getProductId());
@@ -341,7 +349,7 @@ public class Main {
                         if (inventoryService.adjustQuantity(inv.getId(), -q)) {
                             // Record sale
                             int saleId = salesService.getNextSaleId();
-                            Sale sale = new Sale(saleId, inv.getProductId(), p.getName(), q, effectivePrice, store.getStoreId());
+                            Sale sale = new Sale(saleId, inv.getProductId(), p.getName(), q, effectivePrice, store.getStoreId(), isInstallment);
                             salesService.recordSale(sale);
                         } else {
                             System.out.println("Failed to process: " + p.getName());
@@ -1786,17 +1794,49 @@ public class Main {
                     }
                 }
 
-
-
-
-
-
-
-
-
-
-
                 case 22 -> {
+                    int id;
+                    int time;
+                    double newPrice = 0;
+                    for (Product p: productService.getAllProducts()){
+                        System.out.println(p);
+                    }
+                    System.out.println("Choose a product for the payment plan.");
+                    try {
+                        id = Integer.parseInt(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid item ID.");
+                        break;
+                    }
+                    Product product = productService.getProductById(id);
+                    newPrice = product.getPrice();
+                    System.out.println("Choose your selected payment plan length: " +
+                            "\n 3 Months  (at 2%) " +
+                            "\n 6 Months  (at 5%) " +
+                            "\n 12 Months (at 10%) ");
+                    time = Integer.parseInt(sc.nextLine());
+                    while (time != 3 && time != 6 && time != 12){
+                        System.out.println("Please select a valid length of time");
+                        time = Integer.parseInt(sc.nextLine());
+                    }
+                        if (time == 3){
+                            newPrice = newPrice * (0.02) + newPrice;
+                            newPrice = newPrice / 3;
+                            System.out.println("Your monthly payment will be " + newPrice);
+                        }
+                        else if (time == 6){
+                            newPrice = newPrice * (0.05) + newPrice;
+                            newPrice = newPrice / 6;
+                            System.out.println("Your monthly payment will be " + newPrice);
+                        }
+                        else if (time == 12){
+                            newPrice = newPrice * (0.10) + newPrice;
+                            newPrice = newPrice / 12;
+                            System.out.println("Your monthly payment will be " + newPrice);
+                    }
+                }
+
+                case 23 -> {
                     System.out.print("=== Goodbye ===");
                     running = false; // End program
                 }
